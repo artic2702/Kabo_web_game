@@ -1,0 +1,28 @@
+.card {
+  width: 80px;
+  height: 120px;
+  border-radius: 10px;
+  border: 2px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card.front {
+  background: white;
+  color: black;
+}
+
+.card.back {
+  background: linear-gradient(45deg, #444, #111);
+  color: transparent;
+}
