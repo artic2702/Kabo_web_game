@@ -1,12 +1,12 @@
-import Card from "./components/Card";
+// App entry: imports game setup from rules and runs it once on render.
+// Connection: App -> setupGame (rules) -> createDeck (deck)
+import { setupGame } from "./game/rules";
 
 export default function App() {
-  return (
-    <div style={{ display: "flex", gap: "10px", padding: "20px" }}>
-      <Card value={5} visible={true} />
-      <Card value={"K"} visible={true} />
-      <Card value={9} visible={false} />
-      <Card value={"Q"} visible={false} />
-    </div>
-  );
+  // Creates a fresh game state for 2 players
+  const game = setupGame(2);
+  // Logs the generated state to verify wiring is correct
+  console.log(game);
+  // Minimal UI placeholder for now
+  return <h1>Check console</h1>;
 }
