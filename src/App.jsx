@@ -1,12 +1,28 @@
-// App entry: imports game setup from rules and runs it once on render.
-// Connection: App -> setupGame (rules) -> createDeck (deck)
+import { useRef } from "react";
 import { setupGame } from "./game/rules";
+import { revealAll, calculateScores, determineWinners } from "./game/actions";
 
 export default function App() {
-  // Creates a fresh game state for 2 players
-  const game = setupGame(2);
-  // Logs the generated state to verify wiring is correct
-  console.log(game);
-  // Minimal UI placeholder for now
-  return <h1>Check console</h1>;
+  const gameRef = useRef(null);
+
+  if (!gameRef.current) {
+    gameRef.current = setupGame(2);
+
+    // force endgame for testing
+    gameRef.current.gameOver = true;
+  }
+
+  const game = gameRef.current;
+
+  if (game.gameOver) {
+    revealAll(game);
+
+    const scores = calculateScores(game);
+    const winners = determineWinners(scores);
+
+    console.log("Scores:", scores);
+    console.log("Winners:", winners);
+  }
+
+  return <h1>Endgame test</h1>;
 }
