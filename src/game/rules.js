@@ -15,8 +15,9 @@ export function setupGame(playerCount) {
       id: i,
       name: `Player ${i + 1}`,
       hand: [],
-      visible: [true, true, false, false],
-      revealed: false, // ✅ correct place
+      visible: [false, false, false, false], // All cards face-down initially
+      peekedCards: [], // Track which cards player peeked at (indices)
+      revealed: false,
     });
   }
 
@@ -28,7 +29,7 @@ export function setupGame(playerCount) {
   }
 
   // First discard card
-  const discard = deck.pop();
+  const discard = [deck.pop()];
 
   return {
     players,
@@ -37,6 +38,10 @@ export function setupGame(playerCount) {
     currentTurn: 0,
     drawnCard: null,
     drawnFrom: null,
+
+    // Game phases: 'setup' (peeking), 'playing', 'ended'
+    gamePhase: 'setup',
+    peekPhasePlayer: 0,
 
     // Kabo
     kaboCalledBy: null,

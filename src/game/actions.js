@@ -1,4 +1,60 @@
 /* ============================================================
+   SETUP / PEEK PHASE
+   ============================================================ */
+
+/*
+  Peek at a card during setup phase
+  - Records the card index as peeked
+  - Returns the card so UI can show it
+*/
+export function peekAtCard(game, cardIndex) {
+  if (game.gamePhase !== 'setup') return null;
+
+  const player = game.players[game.peekPhasePlayer];
+
+  // Track that this card was peeked (for memory purposes)
+  if (!player.peekedCards.includes(cardIndex)) {
+    player.peekedCards.push(cardIndex);
+  }
+
+  return player.hand[cardIndex];
+}
+
+/*
+  Finish peeking for current player and move to next
+  - Player must have peeked exactly 2 cards
+  - Advances to next player's peek turn
+  - When all players done, transitions to 'playing'
+*/
+export function finishPeekPhase(game) {
+  if (game.gamePhase !== 'setup') return;
+
+  const player = game.players[game.peekPhasePlayer];
+
+  // Must peek at exactly 2 cards
+  if (player.peekedCards.length !== 2) return;
+
+  // Move to next player
+  game.peekPhasePlayer += 1;
+
+  // If all players have peeked, start game
+  if (game.peekPhasePlayer >= game.players.length) {
+    game.gamePhase = 'playing';
+    game.currentTurn = 0;
+    game.peekPhasePlayer = null;
+  }
+}
+
+/*
+  Reset peek for current player (start over)
+*/
+export function resetPeek(game) {
+  if (game.gamePhase !== 'setup') return;
+  game.players[game.peekPhasePlayer].peekedCards = [];
+}
+
+
+/* ============================================================
    DRAW ACTIONS
    ============================================================ */
 
@@ -17,15 +73,14 @@ export function drawFromDeck(game) {
 
 /*
   Draws the top card from the discard pile.
-  - Moves game.discard into game.drawnCard
-  - Clears the discard pile
+  - Takes top card from game.discard array
+  - Stores it temporarily in game.drawnCard
   - Marks that it was drawn from discard
 */
 export function drawFromDiscard(game) {
-  if (!game.discard) return;
+  if (!game.discard || game.discard.length === 0) return;
 
-  game.drawnCard = game.discard;
-  game.discard = null;
+  game.drawnCard = game.discard.pop();
   game.drawnFrom = "discard";
 }
 
@@ -37,7 +92,7 @@ export function drawFromDiscard(game) {
 /*
   Exchanges the drawn card with a selected card in the
   current player's hand.
-  - Selected hand card goes to discard
+  - Selected hand card goes to discard pile
   - Drawn card replaces it in hand
   - Clears drawnCard state
 */
@@ -46,7 +101,7 @@ export function exchangeWithHand(game, handIndex) {
   if (!game.drawnCard) return;
 
   const oldCard = player.hand[handIndex];
-  game.discard = oldCard;
+  game.discard.push(oldCard);
 
   player.hand[handIndex] = game.drawnCard;
 
@@ -118,7 +173,7 @@ export function throwDrawnCard(game) {
 
   const card = game.drawnCard;
 
-  game.discard = card;
+  game.discard.push(card);
   game.drawnCard = null;
   game.drawnFrom = null;
 
