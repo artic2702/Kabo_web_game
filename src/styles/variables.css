@@ -97,13 +97,13 @@
   --shadow-glow-green: 0 0 20px rgba(34, 197, 94, 0.3);
 
   /* ── Card Dimensions ───────────────────────────── */
-  --card-width: 65px;
-  --card-height: 95px;
-  --card-width-sm: 50px;
-  --card-height-sm: 73px;
-  --card-width-lg: 80px;
-  --card-height-lg: 117px;
-  --card-gap: 8px;
+  --card-width: 80px;
+  --card-height: 117px;
+  --card-width-sm: 60px;
+  --card-height-sm: 88px;
+  --card-width-lg: 100px;
+  --card-height-lg: 146px;
+  --card-gap: 10px;
 
   /* ── Transitions ───────────────────────────────── */
   --transition-fast: 150ms ease;

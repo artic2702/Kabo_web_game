@@ -1,8 +1,9 @@
 /**
- * Agent 3: UI/UX Engineer
- * lobby.css — Lobby screen styles
+ * lobby.css — Online lobby premium design
+ * Clean, minimal, with avatar circles and status indicators
  */
 
+/* ── Screen ───────────────────────────────────────── */
 .lobby-screen {
   width: 100vw;
   height: 100vh;
@@ -16,235 +17,437 @@
   font-family: var(--font-primary);
 }
 
+/* ── Container ────────────────────────────────────── */
 .lobby-container {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: var(--space-10) var(--space-8);
+  padding: 36px 32px;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
-  text-align: center;
   max-width: 440px;
-  width: 90%;
+  width: 92%;
   animation: fadeInScale 0.4s ease;
 }
 
-.lobby-container.lobby-wide {
-  max-width: 520px;
+.lobby-container.lobby-room {
+  max-width: 500px;
 }
 
-.lobby-title {
+/* ── Header ───────────────────────────────────────── */
+.lobby-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.lobby-logo {
   font-family: var(--font-display);
-  font-size: var(--text-5xl);
+  font-size: var(--text-4xl);
   font-weight: var(--font-extrabold);
   background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-cyan));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: var(--space-1);
+  margin: 0;
   letter-spacing: 4px;
 }
 
-.lobby-subtitle {
-  font-size: var(--text-base);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-8);
-  font-weight: var(--font-medium);
-}
-
-.lobby-heading {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-6);
-}
-
-/* ── Input Fields ───────────────────────────────── */
-.lobby-name-input {
-  margin-bottom: var(--space-4);
-  text-align: left;
-}
-
-.lobby-name-input label {
-  display: block;
-  font-size: var(--text-sm);
+.lobby-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--color-accent-emerald);
+  border: 1px solid rgba(16, 185, 129, 0.2);
   font-weight: var(--font-semibold);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-2);
-}
-
-.input-field {
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--text-base);
-  color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-md);
-  font-family: var(--font-primary);
-  transition: all var(--transition-fast);
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.input-field::placeholder {
-  color: var(--color-text-muted);
-}
-
-.room-code-input {
-  font-size: var(--text-2xl);
-  text-align: center;
-  letter-spacing: 8px;
-  font-weight: var(--font-bold);
-  text-transform: uppercase;
-}
-
-/* ── Buttons ────────────────────────────────────── */
-.lobby-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-6);
-}
-
-.lobby-btn {
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--text-base);
-}
-
-.lobby-back {
-  margin-top: var(--space-6);
-  font-size: var(--text-sm);
-}
-
-.lobby-error {
-  color: var(--color-danger);
-  font-size: var(--text-sm);
-  margin-top: var(--space-3);
-  animation: fadeIn 0.3s ease;
-}
-
-.lobby-hint {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-top: var(--space-3);
-}
-
-/* ── Room Code Display ──────────────────────────── */
-.room-code-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  margin: var(--space-4) 0;
-  padding: var(--space-3) var(--space-5);
-  background: rgba(139, 92, 246, 0.08);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: var(--radius-lg);
-}
-
-.room-code-label {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.room-code-value {
+/* ── Input Fields ─────────────────────────────────── */
+.lobby-field {
+  margin-bottom: 16px;
+}
+
+.lobby-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.lobby-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.lobby-input:focus {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.lobby-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.lobby-code-input {
   font-size: var(--text-3xl);
+  text-align: center;
+  letter-spacing: 12px;
+  font-weight: var(--font-extrabold);
+  font-family: var(--font-mono);
+  padding: 14px 16px;
+}
+
+.join-field {
+  animation: fadeInUp 0.25s ease;
+}
+
+/* ── Buttons ──────────────────────────────────────── */
+.lobby-actions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.lobby-btn-primary {
+  width: 100%;
+  padding: 14px;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: white;
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.25);
+  letter-spacing: 0.5px;
+}
+
+.lobby-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(139, 92, 246, 0.35);
+}
+
+.lobby-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.lobby-btn-secondary {
+  width: 100%;
+  padding: 14px;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-accent-emerald);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.lobby-btn-secondary:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  transform: translateY(-2px);
+}
+
+.lobby-btn-ghost {
+  width: 100%;
+  padding: 10px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.lobby-btn-ghost:hover {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lobby-back-btn {
+  margin-top: 16px;
+}
+
+.btn-icon {
+  font-size: 1.1em;
+}
+
+/* ── Error ────────────────────────────────────────── */
+.lobby-error {
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: var(--radius-md);
+  margin-top: 8px;
+  animation: fadeIn 0.25s ease;
+}
+
+/* ── Connection Status ────────────────────────────── */
+.lobby-conn {
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 20px;
+}
+
+/* ══════════════════════════════════════════════════════
+   ROOM VIEW (waiting for players)
+   ══════════════════════════════════════════════════════ */
+
+/* ── Room Code Banner ─────────────────────────────── */
+.room-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.06));
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+}
+
+.room-banner-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.room-banner-code {
+  font-size: var(--text-4xl);
   font-weight: var(--font-extrabold);
   color: var(--color-accent-primary);
-  letter-spacing: 6px;
+  letter-spacing: 8px;
   font-family: var(--font-mono);
 }
 
-.copy-btn {
-  font-size: var(--text-xs) !important;
-  padding: var(--space-1) var(--space-2) !important;
+.room-copy-btn {
+  font-size: var(--text-lg);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-/* ── Players List ───────────────────────────────── */
-.players-list {
-  margin: var(--space-6) 0;
+.room-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.room-share-hint {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+/* ── Players List ─────────────────────────────────── */
+.room-players {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
-.player-item {
+.room-player {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-3) var(--space-4);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
 }
 
-.player-item.you {
+.room-player.is-me {
   border-color: rgba(139, 92, 246, 0.2);
-  background: rgba(139, 92, 246, 0.05);
+  background: rgba(139, 92, 246, 0.04);
 }
 
-.player-item.ready {
-  border-color: rgba(34, 197, 94, 0.2);
+.room-player.is-ready {
+  border-color: rgba(34, 197, 94, 0.15);
 }
 
-.player-item-name {
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
+.room-player-empty {
+  opacity: 0.35;
+  border-style: dashed;
+}
+
+.room-player-left {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 12px;
 }
 
-.you-badge,
-.host-badge {
-  font-size: var(--text-xs);
+/* Avatar circle */
+.room-player-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--color-accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-bold);
+  font-size: var(--text-sm);
+  border: 2px solid rgba(139, 92, 246, 0.2);
+  transition: all var(--transition-fast);
+}
+
+.room-player-avatar.avatar-ready {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-success);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.room-player-avatar.avatar-empty {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-muted);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.room-player-name {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-player-name.empty-name {
+  color: var(--color-text-muted);
+  font-weight: var(--font-normal);
+  font-style: italic;
+}
+
+/* Tags */
+.tag {
+  font-size: 10px;
   padding: 1px 6px;
   border-radius: var(--radius-full);
   font-weight: var(--font-bold);
 }
 
-.you-badge {
+.tag-you {
   background: rgba(139, 92, 246, 0.15);
   color: var(--color-accent-primary);
 }
 
-.host-badge {
+.tag-host {
   background: rgba(245, 158, 11, 0.15);
   color: var(--color-accent-gold);
 }
 
-.ready-status {
+/* Status */
+.room-player-status {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 
-.ready-status.is-ready {
+.room-player-status.status-ready {
   color: var(--color-success);
 }
 
-/* ── Lobby Actions ──────────────────────────────── */
-.lobby-actions {
+/* ── Room Actions ─────────────────────────────────── */
+.room-actions {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-6);
+  gap: 8px;
 }
 
-/* ── Connection Status ──────────────────────────── */
-.connection-status {
+.room-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.room-btn-ready {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.25);
+}
+
+.room-btn-ready:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.35);
+}
+
+.room-btn-unready {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.room-btn-unready:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.room-btn-start {
+  background: linear-gradient(135deg, var(--color-accent-gold), #d97706);
+  color: white;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+}
+
+.room-btn-start:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(245, 158, 11, 0.35);
+}
+
+.room-btn-start:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.room-hint {
+  text-align: center;
   font-size: var(--text-xs);
   color: var(--color-text-muted);
-  margin-top: var(--space-6);
+  margin-top: 8px;
+  font-style: italic;
 }

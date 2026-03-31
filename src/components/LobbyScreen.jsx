@@ -1,6 +1,6 @@
 /**
- * Agent 3: UI/UX Engineer
- * LobbyScreen.jsx — Create/join rooms for multiplayer
+ * LobbyScreen.jsx — Premium lobby for online multiplayer
+ * Handles: menu → create/join → waiting room flow
  */
 
 import { useState } from 'react';
@@ -22,9 +22,10 @@ export default function LobbyScreen({
 }) {
   const [playerName, setPlayerName] = useState('');
   const [joinCode, setJoinCode] = useState('');
-  const [view, setView] = useState('menu'); // 'menu' | 'create' | 'join' | 'lobby'
+  const [view, setView] = useState('menu'); // 'menu' | 'lobby'
+  const [joinMode, setJoinMode] = useState(false); // toggle join input
 
-  // Derive ready state from SERVER data (not local) to prevent desync
+  // Derive ready state from SERVER data to prevent desync
   const myServerPlayer = lobbyPlayers.find(p => p.playerId === playerId);
   const isReady = myServerPlayer?.ready ?? false;
 
@@ -41,7 +42,7 @@ export default function LobbyScreen({
   const handleJoin = async () => {
     const name = playerName.trim() || 'Player';
     const code = joinCode.trim().toUpperCase();
-    if (!code) return;
+    if (!code || code.length < 4) return;
     try {
       await onJoinRoom(code, name);
       setView('lobby');
@@ -50,7 +51,6 @@ export default function LobbyScreen({
     }
   };
 
-  // Toggle ready — send the OPPOSITE of current server state
   const handleReady = () => {
     onReady(!isReady);
   };
@@ -62,47 +62,83 @@ export default function LobbyScreen({
 
   const allReady = lobbyPlayers.length >= 2 && lobbyPlayers.every(p => p.ready);
 
-  // ── Connection indicator ──
-  const connDot = connectionStatus === 'connected'
-    ? '🟢'
-    : connectionStatus === 'reconnecting'
-      ? '🟡'
-      : '🔴';
+  const connDot = connectionStatus === 'connected' ? '🟢'
+    : connectionStatus === 'reconnecting' ? '🟡' : '🔴';
 
-  // ── Menu View ──
+  // ── Menu View: Name + Create/Join ──
   if (view === 'menu') {
     return (
       <div className="lobby-screen">
         <div className="lobby-container">
-          <h1 className="lobby-title">KABO</h1>
-          <p className="lobby-subtitle">Online Multiplayer</p>
+          {/* Header */}
+          <div className="lobby-header">
+            <h1 className="lobby-logo">KABO</h1>
+            <span className="lobby-badge">Online</span>
+          </div>
 
-          <div className="lobby-name-input">
-            <label>Your Name</label>
+          {/* Name Input */}
+          <div className="lobby-field">
+            <label className="lobby-label">Your Name</label>
             <input
               type="text"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Enter your name"
+              placeholder="Enter your name..."
               maxLength={15}
-              className="input-field"
+              className="lobby-input"
+              autoFocus
             />
           </div>
 
-          <div className="lobby-buttons">
-            <button className="btn btn-primary lobby-btn" onClick={() => setView('create')}>
-              🎯 Create Room
-            </button>
-            <button className="btn btn-success lobby-btn" onClick={() => setView('join')}>
-              🔗 Join Room
-            </button>
+          {/* Join Code Input (toggled) */}
+          {joinMode && (
+            <div className="lobby-field join-field">
+              <label className="lobby-label">Room Code</label>
+              <input
+                type="text"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="ABCD"
+                maxLength={4}
+                className="lobby-input lobby-code-input"
+                autoFocus
+              />
+            </div>
+          )}
+
+          {error && <p className="lobby-error">⚠️ {error}</p>}
+
+          {/* Action Buttons */}
+          <div className="lobby-actions-row">
+            {!joinMode ? (
+              <>
+                <button className="lobby-btn-primary" onClick={handleCreate}>
+                  <span className="btn-icon">🎯</span>
+                  Create Room
+                </button>
+                <button className="lobby-btn-secondary" onClick={() => setJoinMode(true)}>
+                  <span className="btn-icon">🔗</span>
+                  Join Room
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="lobby-btn-primary" onClick={handleJoin} disabled={joinCode.length < 4}>
+                  <span className="btn-icon">➜</span>
+                  Join Game
+                </button>
+                <button className="lobby-btn-ghost" onClick={() => setJoinMode(false)}>
+                  ← Back
+                </button>
+              </>
+            )}
           </div>
 
-          <button className="btn btn-ghost lobby-back" onClick={onBack}>
+          <button className="lobby-btn-ghost lobby-back-btn" onClick={onBack}>
             ← Back to Menu
           </button>
 
-          <div className="connection-status">
+          <div className="lobby-conn">
             {connDot} {connectionStatus}
           </div>
         </div>
@@ -110,137 +146,72 @@ export default function LobbyScreen({
     );
   }
 
-  // ── Create View ──
-  if (view === 'create') {
-    return (
-      <div className="lobby-screen">
-        <div className="lobby-container">
-          <h2 className="lobby-heading">Create Room</h2>
-
-          <div className="lobby-name-input">
-            <label>Your Name</label>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Enter your name"
-              maxLength={15}
-              className="input-field"
-            />
-          </div>
-
-          <div className="lobby-buttons">
-            <button className="btn btn-primary lobby-btn" onClick={handleCreate}>
-              Create & Get Code
-            </button>
-            <button className="btn btn-ghost lobby-btn" onClick={() => setView('menu')}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Join View ──
-  if (view === 'join') {
-    return (
-      <div className="lobby-screen">
-        <div className="lobby-container">
-          <h2 className="lobby-heading">Join Room</h2>
-
-          <div className="lobby-name-input">
-            <label>Your Name</label>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Enter your name"
-              maxLength={15}
-              className="input-field"
-            />
-          </div>
-
-          <div className="lobby-name-input">
-            <label>Room Code</label>
-            <input
-              type="text"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder="ABCD"
-              maxLength={4}
-              className="input-field room-code-input"
-            />
-          </div>
-
-          {error && <p className="lobby-error">❌ {error}</p>}
-
-          <div className="lobby-buttons">
-            <button className="btn btn-success lobby-btn" onClick={handleJoin}>
-              Join Game
-            </button>
-            <button className="btn btn-ghost lobby-btn" onClick={() => setView('menu')}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Lobby View (in room, waiting) ──
+  // ── Lobby View: In room waiting ──
   return (
     <div className="lobby-screen">
-      <div className="lobby-container lobby-wide">
-        <h2 className="lobby-heading">Game Lobby</h2>
-
-        {/* Room code display */}
-        <div className="room-code-display">
-          <span className="room-code-label">Room Code</span>
-          <span className="room-code-value">{roomCode}</span>
+      <div className="lobby-container lobby-room">
+        {/* Room Code Banner */}
+        <div className="room-banner">
+          <div className="room-banner-label">Room Code</div>
+          <div className="room-banner-code">{roomCode}</div>
           <button
-            className="btn btn-ghost copy-btn"
+            className="room-copy-btn"
             onClick={() => navigator.clipboard?.writeText(roomCode)}
+            title="Copy room code"
           >
-            📋 Copy
+            📋
           </button>
         </div>
+        <p className="room-share-hint">Share this code with friends to join!</p>
 
-        <p className="lobby-hint">Share this code with other players to join!</p>
-
-        {/* Players list */}
-        <div className="players-list">
+        {/* Players */}
+        <div className="room-players">
           {lobbyPlayers.map((p) => (
             <div
               key={p.playerId}
-              className={`player-item ${p.playerId === playerId ? 'you' : ''} ${p.ready ? 'ready' : ''}`}
+              className={`room-player ${p.playerId === playerId ? 'is-me' : ''} ${p.ready ? 'is-ready' : ''}`}
             >
-              <span className="player-item-name">
-                {p.name}
-                {p.playerId === playerId && <span className="you-badge">You</span>}
-                {p.playerId === 0 && <span className="host-badge">Host</span>}
-              </span>
-              <span className={`ready-status ${p.ready ? 'is-ready' : ''}`}>
+              <div className="room-player-left">
+                <div className={`room-player-avatar ${p.ready ? 'avatar-ready' : ''}`}>
+                  {p.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="room-player-info">
+                  <span className="room-player-name">
+                    {p.name}
+                    {p.playerId === playerId && <span className="tag tag-you">You</span>}
+                    {p.playerId === 0 && <span className="tag tag-host">Host</span>}
+                  </span>
+                </div>
+              </div>
+              <div className={`room-player-status ${p.ready ? 'status-ready' : ''}`}>
                 {p.ready ? '✅ Ready' : '⏳ Waiting'}
-              </span>
+              </div>
+            </div>
+          ))}
+
+          {/* Empty slots */}
+          {Array.from({ length: 5 - lobbyPlayers.length }).map((_, i) => (
+            <div key={`empty-${i}`} className="room-player room-player-empty">
+              <div className="room-player-left">
+                <div className="room-player-avatar avatar-empty">?</div>
+                <span className="room-player-name empty-name">Waiting for player...</span>
+              </div>
             </div>
           ))}
         </div>
 
-        {error && <p className="lobby-error">❌ {error}</p>}
-
         {/* Actions */}
-        <div className="lobby-actions">
+        <div className="room-actions">
           <button
-            className={`btn ${isReady ? 'btn-danger' : 'btn-success'} lobby-btn`}
+            className={`room-btn ${isReady ? 'room-btn-unready' : 'room-btn-ready'}`}
             onClick={handleReady}
           >
-            {isReady ? '❌ Unready' : '✅ Ready'}
+            {isReady ? '❌ Unready' : '✅ Ready Up'}
           </button>
 
           {isHost && (
             <button
-              className="btn btn-kabo lobby-btn"
+              className="room-btn room-btn-start"
               onClick={onStartGame}
               disabled={!allReady}
             >
@@ -248,16 +219,16 @@ export default function LobbyScreen({
             </button>
           )}
 
-          <button className="btn btn-ghost lobby-btn" onClick={handleLeave}>
+          <button className="lobby-btn-ghost" onClick={handleLeave}>
             🚪 Leave Room
           </button>
         </div>
 
         {!allReady && isHost && (
-          <p className="lobby-hint">All players must be ready before starting</p>
+          <p className="room-hint">All players must be ready before starting</p>
         )}
 
-        <div className="connection-status">
+        <div className="lobby-conn">
           {connDot} {connectionStatus} · {lobbyPlayers.length}/5 players
         </div>
       </div>

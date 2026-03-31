@@ -1,6 +1,6 @@
 /**
- * Agent 3: UI/UX Engineer
- * StartScreen.jsx — Start screen with local + online options
+ * StartScreen.jsx — Premium landing page for Kabo
+ * Two clear paths: Local Play and Online Multiplayer
  */
 
 import { useState } from 'react';
@@ -19,71 +19,60 @@ export default function StartScreen({ onStartLocal, onPlayOnline }) {
 
   return (
     <div className="start-screen">
-      <div className="start-container">
-        <h1 className="start-title">KABO</h1>
-        <p className="start-subtitle">Card Game</p>
+      {/* Floating card decoration */}
+      <div className="floating-cards" aria-hidden="true">
+        <span className="float-card fc-1">🂡</span>
+        <span className="float-card fc-2">🂮</span>
+        <span className="float-card fc-3">🃏</span>
+        <span className="float-card fc-4">🂫</span>
+      </div>
 
-        {/* Local Play */}
-        <div className="player-selection">
-          <label>Local Play — Number of Players</label>
-          <div className="player-input-group">
-            <button
-              className="player-btn-minus"
-              onClick={() => setPlayerCount(Math.max(GAME_CONFIG.MIN_PLAYERS, playerCount - 1))}
-            >
-              −
-            </button>
-            <input
-              type="number"
-              min={GAME_CONFIG.MIN_PLAYERS}
-              max={GAME_CONFIG.MAX_PLAYERS}
-              value={playerCount}
-              onChange={(e) => {
-                const val = parseInt(e.target.value);
-                if (val >= GAME_CONFIG.MIN_PLAYERS && val <= GAME_CONFIG.MAX_PLAYERS) {
-                  setPlayerCount(val);
-                }
-              }}
-              className="player-input"
-            />
-            <button
-              className="player-btn-plus"
-              onClick={() => setPlayerCount(Math.min(GAME_CONFIG.MAX_PLAYERS, playerCount + 1))}
-            >
-              +
-            </button>
+      <div className="start-container">
+        {/* Logo */}
+        <div className="start-logo">
+          <h1 className="start-title">KABO</h1>
+          <div className="start-tagline">The Memory Card Game</div>
+        </div>
+
+        {/* Mode Cards */}
+        <div className="mode-cards">
+          {/* Local Mode */}
+          <div className="mode-card mode-local" onClick={handleStartLocal}>
+            <div className="mode-icon">🎲</div>
+            <div className="mode-label">Local Play</div>
+            <div className="mode-desc">Same device, take turns</div>
+            <div className="mode-player-select" onClick={e => e.stopPropagation()}>
+              <button
+                className="mode-count-btn"
+                onClick={() => setPlayerCount(Math.max(GAME_CONFIG.MIN_PLAYERS, playerCount - 1))}
+              >−</button>
+              <span className="mode-count">{playerCount}</span>
+              <button
+                className="mode-count-btn"
+                onClick={() => setPlayerCount(Math.min(GAME_CONFIG.MAX_PLAYERS, playerCount + 1))}
+              >+</button>
+              <span className="mode-count-label">players</span>
+            </div>
+            <div className="mode-action">Start Game →</div>
+          </div>
+
+          {/* Online Mode */}
+          <div className="mode-card mode-online" onClick={onPlayOnline}>
+            <div className="mode-icon">🌐</div>
+            <div className="mode-label">Play Online</div>
+            <div className="mode-desc">Create or join a room</div>
+            <div className="mode-feature-list">
+              <span>🔗 Room codes</span>
+              <span>⚡ Real-time</span>
+            </div>
+            <div className="mode-action">Play with Friends →</div>
           </div>
         </div>
 
-        <button className="btn-start" onClick={handleStartLocal}>
-          Start Local Game
-        </button>
-
-        {/* Divider */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '12px',
-          margin: '24px 0 20px',
-        }}>
-          <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
-          <span style={{ color: 'var(--color-text-muted)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '2px' }}>or</span>
-          <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+        {/* Footer */}
+        <div className="start-footer">
+          <p>2–5 players • Lowest score wins • Memorize your cards!</p>
         </div>
-
-        {/* Online Play */}
-        <button
-          className="btn-start"
-          onClick={onPlayOnline}
-          style={{
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
-          }}
-        >
-          🌐 Play Online
-        </button>
-
-        <p className="game-info">
-          Local: Take turns on the same device. Online: Create or join a room to play with friends!
-        </p>
       </div>
     </div>
   );
