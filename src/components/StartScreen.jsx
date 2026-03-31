@@ -25,6 +25,10 @@ export default function StartScreen({ onStartLocal, onPlayOnline }) {
         <span className="float-card fc-2">🂮</span>
         <span className="float-card fc-3">🃏</span>
         <span className="float-card fc-4">🂫</span>
+        <span className="float-card fc-5">🂢</span>
+        <span className="float-card fc-6">🂾</span>
+        <span className="float-card fc-7">🃁</span>
+        <span className="float-card fc-8">🂩</span>
       </div>
 
       <div className="start-container">

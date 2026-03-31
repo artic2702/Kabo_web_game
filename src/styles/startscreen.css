@@ -31,15 +31,19 @@
 
 .float-card {
   position: absolute;
-  font-size: 4rem;
-  opacity: 0.06;
+  font-size: 7rem;
+  opacity: 0.12;
   animation: floatSpin 20s linear infinite;
 }
 
-.fc-1 { top: 10%; left: 10%; animation-delay: 0s; animation-duration: 25s; }
-.fc-2 { top: 15%; right: 12%; animation-delay: -5s; animation-duration: 22s; }
-.fc-3 { bottom: 20%; left: 15%; animation-delay: -10s; animation-duration: 28s; }
-.fc-4 { bottom: 12%; right: 10%; animation-delay: -15s; animation-duration: 20s; }
+.fc-1 { top: 5%; left: 5%; animation-delay: 0s; animation-duration: 25s; }
+.fc-2 { top: 8%; right: 8%; animation-delay: -5s; animation-duration: 22s; font-size: 6rem; }
+.fc-3 { bottom: 15%; left: 8%; animation-delay: -10s; animation-duration: 28s; }
+.fc-4 { bottom: 8%; right: 6%; animation-delay: -15s; animation-duration: 20s; font-size: 6rem; }
+.fc-5 { top: 40%; left: 2%; animation-delay: -3s; animation-duration: 26s; font-size: 5rem; opacity: 0.08; }
+.fc-6 { top: 35%; right: 3%; animation-delay: -8s; animation-duration: 24s; font-size: 5.5rem; opacity: 0.09; }
+.fc-7 { bottom: 35%; left: 20%; animation-delay: -12s; animation-duration: 30s; font-size: 5rem; opacity: 0.07; }
+.fc-8 { top: 70%; right: 18%; animation-delay: -18s; animation-duration: 23s; font-size: 5.5rem; opacity: 0.08; }
 
 @keyframes floatSpin {
   0%   { transform: translateY(0) rotate(0deg); }
