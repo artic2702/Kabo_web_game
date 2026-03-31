@@ -17,10 +17,11 @@ export default function PlayerPosition({
   winners,
 }) {
   // Calculate angle for circular positioning
+  // +90° offset puts index 0 at the BOTTOM (facing the player)
   const angle = (index / totalPlayers) * 360;
   const radius = 320; // Distance from center
-  const x = Math.cos((angle - 90) * (Math.PI / 180)) * radius;
-  const y = Math.sin((angle - 90) * (Math.PI / 180)) * radius;
+  const x = Math.cos((angle + 90) * (Math.PI / 180)) * radius;
+  const y = Math.sin((angle + 90) * (Math.PI / 180)) * radius;
 
   const isWinner = winners?.some(w => w.playerId === player.id);
   const playerScore = scores?.find(s => s.playerId === player.id);

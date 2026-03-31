@@ -23,7 +23,10 @@ export default function LobbyScreen({
   const [playerName, setPlayerName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [view, setView] = useState('menu'); // 'menu' | 'create' | 'join' | 'lobby'
-  const [isReady, setIsReady] = useState(false);
+
+  // Derive ready state from SERVER data (not local) to prevent desync
+  const myServerPlayer = lobbyPlayers.find(p => p.playerId === playerId);
+  const isReady = myServerPlayer?.ready ?? false;
 
   const handleCreate = async () => {
     const name = playerName.trim() || 'Player';
@@ -47,16 +50,14 @@ export default function LobbyScreen({
     }
   };
 
+  // Toggle ready — send the OPPOSITE of current server state
   const handleReady = () => {
-    const newReady = !isReady;
-    setIsReady(newReady);
-    onReady(newReady);
+    onReady(!isReady);
   };
 
   const handleLeave = () => {
     onLeaveRoom();
     setView('menu');
-    setIsReady(false);
   };
 
   const allReady = lobbyPlayers.length >= 2 && lobbyPlayers.every(p => p.ready);

@@ -34,6 +34,20 @@
 export function filterStateForPlayer(state, playerId) {
   if (!state) return null;
 
+  // When game is over, reveal EVERYTHING — all cards visible to all players
+  // This is needed so the client can correctly calculate scores
+  if (state.gamePhase === 'ended') {
+    return {
+      ...state,
+      deck: { length: state.deck.length },
+      players: state.players.map(player => ({
+        ...player,
+        revealed: true,
+      })),
+      eventLog: [],
+    };
+  }
+
   return {
     ...state,
 
@@ -47,11 +61,10 @@ export function filterStateForPlayer(state, playerId) {
       return {
         ...player,
         hand: player.hand.map((card, i) => {
-          // Revealed cards (game end) are visible to everyone
+          // Revealed cards are visible to everyone
           if (player.visible[i] || player.revealed) return card;
-          // Hidden cards: even the owner gets a stub
-          // (they remember from peeking, the UI handles memory)
-          if (isMe) return card; // Own cards are always sent
+          // Own cards are always sent (player remembers from peeking)
+          if (isMe) return card;
           return { id: card.id, hidden: true };
         }),
         // Don't tell others which cards you peeked at
