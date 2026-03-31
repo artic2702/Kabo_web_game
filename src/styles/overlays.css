@@ -1,0 +1,442 @@
+/**
+ * Agent 3: UI/UX Engineer
+ * overlays.css — Modals, peek UI, power-up UI, stack UI, game end
+ */
+
+/* ══════════════════════════════════════════════════════
+   SHARED OVERLAY
+   ══════════════════════════════════════════════════════ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-overlay);
+  animation: fadeIn 0.25s ease;
+}
+
+.overlay-modal {
+  background: var(--color-bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-8) var(--space-8);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+  max-width: 560px;
+  width: 90%;
+  animation: fadeInScale 0.3s ease;
+}
+
+.overlay-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.overlay-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.overlay-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-top: var(--space-6);
+  flex-wrap: wrap;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   PEEK PHASE UI
+   ══════════════════════════════════════════════════════ */
+
+.peek-phase-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-overlay);
+  animation: fadeIn 0.3s ease;
+}
+
+.peek-phase-modal {
+  background: var(--color-bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+  max-width: 520px;
+  width: 90%;
+  animation: fadeInScale 0.35s ease;
+}
+
+.peek-phase-modal h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.peek-instruction {
+  margin-bottom: var(--space-6);
+}
+
+.peek-instruction p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.peek-instruction .peek-counter {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+
+/* ── Peek Cards Grid ──────────────────────────────── */
+.peek-cards-horizontal {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+  flex-wrap: wrap;
+}
+
+.peek-card-wrapper {
+  position: relative;
+}
+
+.peek-card-btn {
+  background: none;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.peek-card-btn:hover:not(:disabled) {
+  border-color: var(--color-accent-primary);
+  background: rgba(139, 92, 246, 0.08);
+  transform: translateY(-4px);
+}
+
+.peek-card-btn.selected {
+  border-color: var(--color-accent-primary);
+  background: rgba(139, 92, 246, 0.12);
+  box-shadow: var(--shadow-glow-purple);
+}
+
+.peek-card-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.card-number {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+}
+
+/* ── Peeked Card Display ──────────────────────────── */
+.peeked-display {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  margin: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  animation: fadeInScale 0.3s ease;
+}
+
+.peeked-display h3 {
+  margin: 0;
+  color: var(--color-accent-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.peeked-display p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   POWER-UP UI
+   ══════════════════════════════════════════════════════ */
+
+.power-up-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  padding-bottom: var(--space-8);
+}
+
+.power-up-banner {
+  pointer-events: all;
+  background: var(--color-bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  animation: fadeInUp 0.3s ease;
+  max-width: 400px;
+}
+
+.power-up-icon {
+  font-size: var(--text-3xl);
+}
+
+.power-up-title {
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  font-size: var(--text-xl);
+}
+
+.power-up-title.queen {
+  color: var(--color-accent-rose);
+}
+
+.power-up-title.nine {
+  color: var(--color-accent-cyan);
+}
+
+.power-up-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.power-up-step {
+  font-size: var(--text-xs);
+  color: var(--color-accent-primary);
+  font-weight: var(--font-semibold);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   STACK PHASE UI
+   ══════════════════════════════════════════════════════ */
+
+.stack-phase-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  pointer-events: none;
+  padding-top: 80px;
+}
+
+.stack-phase-banner {
+  pointer-events: all;
+  background: var(--color-bg-secondary);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  animation: fadeInUp 0.3s ease;
+}
+
+.stack-phase-text {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-accent-gold);
+}
+
+.stack-phase-hint {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.stack-timer {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-2);
+}
+
+.stack-timer-fill {
+  height: 100%;
+  background: var(--color-accent-gold);
+  border-radius: var(--radius-full);
+  transition: width 100ms linear;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   GAME END SCREEN
+   ══════════════════════════════════════════════════════ */
+
+.game-end-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn 0.4s ease;
+}
+
+.game-end-modal {
+  background: var(--color-bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-10);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+  animation: bounceIn 0.6s ease;
+}
+
+.game-end-title {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-extrabold);
+  margin-bottom: var(--space-2);
+}
+
+.game-end-title.winner {
+  background: linear-gradient(135deg, var(--color-accent-gold), #fbbf24, var(--color-accent-gold));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.game-end-winner-name {
+  font-size: var(--text-xl);
+  color: var(--color-accent-gold);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-6);
+}
+
+/* Score Table */
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-6) 0;
+}
+
+.score-table th {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.score-table td {
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.score-table tr.winner-row td {
+  color: var(--color-accent-gold);
+  font-weight: var(--font-bold);
+}
+
+.score-table .score-value {
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+}
+
+.score-table .kabo-badge {
+  display: inline-block;
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-semibold);
+  margin-left: var(--space-2);
+}
+
+.kabo-badge.bonus {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-success);
+}
+
+.kabo-badge.penalty {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-danger);
+}
+
+.game-end-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-top: var(--space-8);
+}
+
+/* ══════════════════════════════════════════════════════
+   ACTION PANEL (bottom context actions)
+   ══════════════════════════════════════════════════════ */
+
+.action-panel {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-xl);
+  z-index: var(--z-drawn-card);
+  animation: fadeInUp 0.3s ease;
+}
+
+.action-panel .action-hint {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+}

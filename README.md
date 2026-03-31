@@ -1,250 +1,378 @@
-# Kabo – Online Multiplayer Card Game
+# 🃏 KABO — Multiplayer Card Game
 
-Kabo is a turn-based card game for 2 to 5 players where the goal is to end the game with the **lowest total hand value**.
-The game focuses on memory, bluffing, and smart use of power-ups.
+A fully functional, real-time multiplayer card game built with **React**, **Node.js**, and **Socket.IO**.
 
-This project is being built as a **web-based multiplayer game** using:
-
-- Frontend: React + Vite + CSS
-- Backend (planned): Node.js + Express
-- Multiplayer (planned): WebSockets / Socket.IO
-
-Right now, the focus is on building the full game UI and logic first, then adding multiplayer later.
+Play locally on the same device, or online with friends using room codes!
 
 ---
 
-## Game Rules
+## 📋 Table of Contents
+
+- [How to Play Kabo](#-how-to-play-kabo)
+- [Quick Start](#-quick-start)
+- [How to Play with Friends Online](#-how-to-play-with-friends-online)
+- [How WebSockets Work (Explained Simply)](#-how-websockets-work-explained-simply)
+- [Project Architecture](#-project-architecture)
+- [Folder Structure](#-folder-structure)
+- [Technologies Used](#-technologies-used)
+
+---
+
+## 🎮 How to Play Kabo
+
+Kabo is a memory card game where the goal is to have the **lowest total hand value**.
 
 ### Setup
-
-- 2 to 5 players.
-- Each player gets **4 cards** from the deck.
-- At the start, a player may see **only 2 of their 4 cards**.
-- After that, cards cannot be looked at again unless a power-up allows it.
-- One card is placed face-up in the middle (discard pile).
-
-### Turn Actions
-
-On your turn, you can do one of the following:
-
-1. Pick from the **middle (discard pile)**
-   - You must exchange it with one card from your hand.
-   - You cannot pick and throw the same card back.
-
-2. Pick from the **deck**
-   - You can:
-     - Exchange it with one of your hand cards, or
-     - Throw it directly into the middle.
+- Each player gets **4 face-down cards**
+- At the start, you peek at **2 of your 4 cards** — memorize them!
+- The remaining 2 cards are unknown to you
 
 ### Card Values
+| Card | Value |
+|------|-------|
+| King (K) | 0 |
+| Ace (A) | 1 |
+| 2–10 | Face value |
+| Jack (J) | 11 |
+| Queen (Q) | 12 |
 
-- Normal cards have their number value.
-- **King = 0 (special low card).**
+### On Your Turn
+1. **Draw** from the deck (face-down) or the discard pile (face-up)
+2. **Decide**: Either swap it with one of your hand cards, or throw it away
+   - If you draw from discard, you **must** swap (no throwing back)
+3. **Power-ups** trigger when you throw certain cards:
+   - **Queen (Q)** → Swap any 2 cards between different players
+   - **9** → Peek at one of your own face-down cards
+4. **Stack rule**: After a card is discarded, other players (NOT the one who discarded) have **8 seconds** to drop a matching-rank card from their hand. Only the first player to react gets to stack!
+   - Correct stack → card is removed from your hand (fewer cards = lower score!)
+   - Wrong stack → penalty card drawn from the deck
 
-### Power-Ups (Only if drawn from deck and thrown to middle)
+### Calling KABO
+- At the **start of your turn**, you can call "KABO!" if you think you have the lowest hand
+- You still play your turn normally
+- Everyone else gets **one more turn** (final round)
+- Then all cards are revealed:
+  - ✅ If Kabo caller has the lowest score → they win!
+  - ❌ If someone else tied or beat them → Kabo caller gets **+10 penalty**
 
-- **Queen** → Power-up
-  - You may exchange any two cards:
-    - Both from yourself, or
-    - Between any two players.
-
-- **9** → Power-up
-  - You may look at any one of your hidden cards.
-
-### Stack Rule
-
-- If a player throws a card with value X (for example 3),
-  - Any player who has the same value card may immediately drop it.
-  - Their hand size becomes smaller.
-
-### Calling Kabo (Ending the Game)
-
-- On your turn, you may say **“Kabo”** if you think your hand value is the lowest.
-- You still finish your turn normally.
-- Every other player gets **one final turn**.
-- After the last player finishes:
-  - All cards are revealed.
-  - The player with the **lowest total hand value wins**.
-
----
-
-## Project Goals
-
-- Build full card game UI in React.
-- Implement all game rules locally (single-device play).
-- Add animations and clean layout.
-- Later:
-  - Add backend with Node.js + Express.
-  - Add real-time multiplayer using WebSockets / Socket.IO.
-  - Support game rooms and online play.
+### Winning
+The player with the **lowest total hand value** wins!
 
 ---
 
-## Current Progress (Phase 1: UI/UX Development)
+## 🚀 Quick Start
 
-### ✅ Completed Features
+### Prerequisites
+- [Node.js](https://nodejs.org/) v18+ installed
 
-#### Core Game Logic
+### Install & Run
 
-- **Card Dealing System** - Shuffle deck and distribute 4 cards to each player
-- **Card Value Calculation** - Kings have special values (red=0, black=13), numbered cards are face value, face cards (J, Q, K) have values 11, 12, 13
-- **Game State Management** - Track game phases, player turns, drawn cards, discard pile
-- **Turn System** - Sequential turn rotation between players
-- **Kabo Call Mechanics** - When called, triggers final round where every other player gets one last turn
+```bash
+# 1. Clone the project
+cd kabo
 
-#### Phase 1: UI/UX Implementation
+# 2. Install dependencies
+npm install
 
-- **Circular Table Layout**
-  - Players positioned in a circle around the game table using CSS transforms and trigonometry
-  - Auto-positioning: angle = (playerIndex / totalPlayers) \* 360 degrees
-  - Works for 2-5 players with proper spacing (180° apart for 2 players, 120° for 3, etc.)
+# 3. Start the game server (for multiplayer)
+npm run server
 
-- **Game Board Components**
-  - Main GameBoard orchestrator component managing all game state and logic flow
-  - Circular table with green felt background
-  - Center display showing deck and discard pile
-
-- **Card Display System**
-  - Card component with face-up/face-down states
-  - Uses actual PNG card images from `/public/cards/` directory
-  - Card images format: `{suit}_{rank}.png` (e.g., `heart_5.png`, `spade_king.png`, `club_back.png`)
-  - Support for all 52 cards + card back image
-
-- **Player Positioning**
-  - PlayerPosition component places each player around the circular table
-  - Shows player name, 4 cards, and hand value (revealed at game end)
-  - Card visibility tracked per player with `visible: [boolean, boolean, boolean, boolean]` array
-  - Current turn player highlighted with visual indicator
-
-- **Peek Phase UI**
-  - Modal overlay during setup phase where each player peeks at exactly 2 cards
-  - Horizontal card layout for easy selection
-  - Auto-advances to next player when 2 cards selected
-  - Cards remain face-down after peek phase, only player remembers them
-  - All 4 players go through peek phase before game starts
-
-- **Game Phases**
-  - "setup" - Peek phase where players memorize 2 cards
-  - "playing" - Main game loop with turns and actions
-  - "ended" - Game over, all cards revealed, winner determined
-
-#### Game Flow
-
-1. Player count selection screen (2-5 players)
-2. Deck shuffled and 4 cards dealt to each player (all face-down)
-3. Each player takes turn peeking at exactly 2 of their cards (memorization)
-4. Game starts with all cards face-down
-5. Players take turns drawing from deck or discard pile
-6. Players can exchange drawn card with hand card or throw it away
-7. Other players can stack matching rank cards instantly
-8. Players can use power-ups (Queen for swaps, 9 for peeking at own card)
-9. Player calls "KABO" when confident they have lowest hand
-10. Other players get final turns
-11. All cards revealed, lowest hand value wins
-
-### 🚧 In Progress / Not Yet Implemented
-
-- **Drag-and-Drop Exchange** (partially ready)
-  - Ability to drag drawn card and drop on own hand cards to exchange
-  - Ability to drag own cards and drop on drawn card
-  - Visual feedback during drag operations
-
-- **Stack Rule UI**
-  - When a card is thrown, show option for other players to instantly drop matching rank card
-  - Rapid-fire card drops during stack phase
-
-- **Power-Up Effects**
-  - Queen power: Select any 2 cards to swap (from own hand or between players)
-  - 9 power: Peek at any one of your hidden cards
-  - Visual indicators when power-ups are available
-
-- **Card Selection & Exchange**
-  - Click deck/discard to draw
-  - Click own card to exchange with drawn card
-  - Full exchange workflow integration
-
-- **Game End & Winner Display**
-  - Calculate all hand values when game ends
-  - Show all cards revealed
-  - Display winner with final scores
-
-### 📦 File Structure
-
-```
-src/
-├── game/
-│   ├── rules.js          # Game initialization, player setup, game state structure
-│   └── actions.js        # Peek phase, draw, exchange, turn management, Kabo logic
-├── components/
-│   ├── GameBoard.jsx     # Main orchestrator, game flow control
-│   ├── PlayerPosition.jsx# Circular player positioning
-│   ├── Card.jsx          # Individual card display with images
-│   ├── TableCenter.jsx   # Deck and discard pile display
-│   ├── PeekPhaseUI.jsx   # Peek phase modal (auto-advances when 2 cards selected)
-│   └── GameControls.jsx  # Turn action buttons (to be replaced with drag-drop)
-├── styles/
-│   └── gameboard.css     # All styling for circular table, cards, animations
-├── App.jsx               # React app entry point
-└── main.jsx              # Vite entry point
-
-public/
-└── cards/                # PNG card images
-    ├── heart_1.png to heart_10.png, heart_jack.png, heart_queen.png, heart_king.png
-    ├── diamond_*.png
-    ├── spade_*.png
-    ├── club_*.png
-    └── back.png          # Card back face image
+# 4. In a NEW terminal, start the frontend
+npm run dev
 ```
 
-### 🎮 How To Play (Current State)
+Then open **http://localhost:5173** in your browser.
 
-1. **Start Game**: Enter player count (2-5) on startup screen
-2. **Peek Phase**: Each player sees 2 cards and must memorize them
-3. **Playing Phase**: (In Development)
-   - Draw from deck or discard pile
-   - Select card from hand to exchange
-   - Other players can stack matching cards
-   - Call KABO when ready to end
-4. **Endgame**: All cards revealed, lowest value wins
+- **Local Play**: Click "Start Local Game" — players take turns on the same screen
+- **Online Play**: Click "Play Online" → Create Room → Share the code!
 
 ---
 
-## Future Plans
+## 🌐 How to Play with Friends Online
 
-### Phase 2: Multiplayer Backend (Planned)
+### Step-by-Step Guide
 
-- WebSocket communication using Socket.IO
-- Node.js + Express backend server
-- Game room management
-- Real-time turn notifications
-- Player disconnect handling
-- Game persistence
+#### Player 1 (Host):
+1. Run `npm run server` and `npm run dev` on your computer
+2. Open the game in your browser
+3. Click **"Play Online"**
+4. Enter your name and click **"Create Room"**
+5. You'll get a **4-letter room code** (e.g., `MWPK`)
+6. Share this code with your friends!
+7. Click **"Ready"** when everyone has joined
+8. Click **"Start Game"** to begin
 
-### Phase 3: Online Features (Planned)
+#### Player 2+ (Friends):
+1. Open the game URL in their browser
+2. Click **"Play Online"**
+3. Enter their name and click **"Join Room"**
+4. Type the **room code** the host shared
+5. Click **"Ready"**
+6. Wait for the host to start the game!
 
-- User authentication
-- Game lobbies and matchmaking
-- Chat system
-- Player statistics and ranking
-- Replay/history
-- Mobile responsiveness
+### Playing on the Same Network (LAN)
+If your friends are on the same WiFi network:
+
+1. Find your computer's local IP address:
+   ```bash
+   # Windows
+   ipconfig
+   # Look for "IPv4 Address": something like 192.168.1.5
+   ```
+2. Your friends open `http://192.168.1.5:5173` in their browser
+3. Make sure the server is running on your machine (`npm run server`)
+
+### Playing Over the Internet
+To play with friends NOT on your network, you need to either:
+- **Deploy** the server to a cloud service (Render, Railway, Heroku)
+- Use a **tunneling tool** like [ngrok](https://ngrok.com/):
+  ```bash
+  # Expose your local server to the internet
+  ngrok http 3001
+  ```
+  Then share the ngrok URL with friends. Update the `VITE_SERVER_URL` env variable to match.
 
 ---
 
-## Tech Stack
+## 🔌 How WebSockets Work (Explained Simply)
 
-- **Frontend**: React 18 + Vite + Tailwind CSS
-- **Backend**: Node.js + Express (planned)
-- **Real-time**: Socket.IO (planned)
-- **Database**: MongoDB/PostgreSQL (planned)
-- **Assets**: PNG card images
+### The Problem with Normal HTTP
+Normally, a web browser talks to a server like this:
+
+```
+Browser: "Hey server, any new data?"     → HTTP Request
+Server:  "Nope."                         ← HTTP Response
+
+(2 seconds later)
+
+Browser: "How about now?"                → HTTP Request
+Server:  "Still no."                     ← HTTP Response
+
+(2 seconds later)
+
+Browser: "Now?"                          → HTTP Request
+Server:  "YES! Player 2 drew a card!"    ← HTTP Response
+```
+
+This is called **polling** — the browser keeps asking over and over. It's slow and wastes bandwidth.
+
+### WebSockets: A Persistent Connection
+WebSockets fix this by creating a **permanent, two-way connection**:
+
+```
+Browser: "Hey, let's upgrade to WebSocket"  → HTTP Upgrade Request
+Server:  "Sure, connection open!"            ← 101 Switching Protocols
+
+  ═══════════ CONNECTION STAYS OPEN ═══════════
+
+Server → Browser: "Player 2 drew a card!"    (instant push)
+Server → Browser: "Player 2 swapped card 3!" (instant push)
+Browser → Server: "I want to draw from deck" (instant send)
+Server → Browser: "Here's your new card!"    (instant push)
+```
+
+The connection stays open like a **phone call** — either side can talk at any time without asking first.
+
+### How Kabo Uses WebSockets (Socket.IO)
+
+We use **Socket.IO**, a library that makes WebSockets easy to use. Here's what happens:
+
+#### 1. Connection
+```
+You open the game → Browser connects to server via WebSocket
+Server assigns you a unique socket ID (like a phone number)
+```
+
+#### 2. Creating a Room
+```
+You click "Create Room"
+  → Browser sends: socket.emit('room:create', { playerName: 'You' })
+  → Server creates room "MWPK", remembers your socket ID
+  ← Server replies: { roomCode: 'MWPK', playerId: 0 }
+```
+
+#### 3. Friend Joins
+```
+Friend enters code "MWPK"
+  → Friend's browser sends: socket.emit('room:join', { roomCode: 'MWPK', playerName: 'Friend' })
+  → Server adds friend to room "MWPK"
+  ← Server tells YOU: socket.emit('room:player-joined', { ... })
+  ← Server tells FRIEND: { success: true, playerId: 1 }
+```
+
+#### 4. During the Game
+```
+It's your turn, you click the deck:
+  → Browser sends: socket.emit('game:action', { type: 'DRAW_FROM_DECK' })
+  → Server validates: "Is it really your turn? Is this action legal?"
+  → Server runs the SAME game logic (gameReducer) that local mode uses
+  → Server filters the state (hides your cards from your friend!)
+  → Server sends EACH player their own filtered view:
+      ← To you:    { state: { ...yourCards visible... } }
+      ← To friend:  { state: { ...yourCards hidden... } }
+```
+
+#### 5. Anti-Cheat
+The server is the **single source of truth**. No one can cheat because:
+- The server validates every action (checks if it's your turn, if the move is legal)
+- The server hides information (you can't see other players' face-down cards)
+- Even if someone hacks their browser, the server rejects invalid moves
+
+### Visual Flow
+
+```
+┌──────────────┐                    ┌──────────────┐
+│   Player 1   │◄══ WebSocket ══►   │              │   ◄══ WebSocket ══►  ┌──────────────┐
+│   Browser    │    (Socket.IO)     │    SERVER    │      (Socket.IO)     │   Player 2   │
+│              │                    │              │                      │   Browser    │
+│  React App   │ ── action ──────►  │  Validates   │  ◄── action ──────  │  React App   │
+│              │ ◄── state ──────── │  Processes   │  ─── state ──────►  │              │
+│              │                    │  Broadcasts  │                      │              │
+└──────────────┘                    └──────────────┘                      └──────────────┘
+
+         Action: "I want to draw a card"
+         State:  "Here's the new board (with your cards visible, theirs hidden)"
+```
 
 ---
 
-## Development Notes
+## 🏗️ Project Architecture
 
-- All 52 cards are represented as image files in `/public/cards/`
-- Game logic separated into `rules.js` (initialization) and `actions.js` (game actions)
-- React state management using useState and useRef for persistent game state
-- Circular positioning uses CSS transforms with trigonometric calculations
-- Card visibility managed separately from card values to maintain memory gameplay mechanics
+The project is split into **4 clear responsibility areas**:
+
+### 1. Game Logic (`src/game/`) — The Rules Engine
+Pure JavaScript, zero dependencies. Contains all game rules as **pure functions** — given a state and an action, it returns a new state. No React, no DOM, no side effects.
+
+This is the brain of the game. The same code runs on both the client (local mode) and the server (multiplayer mode).
+
+### 2. UI Components (`src/components/`) — What You See
+React components that render the game. They never contain game rules — they just display state and collect user input.
+
+### 3. Hooks (`src/hooks/`) — The Bridge
+React hooks that connect the components to the game logic:
+- **Local mode**: `useGameState` runs the game reducer directly in the browser
+- **Online mode**: `useMultiplayerState` sends actions to the server via WebSocket and receives state updates
+
+### 4. Server (`server/`) — The Multiplayer Brain
+Node.js + Express + Socket.IO server that:
+- Manages rooms (create/join/leave)
+- Runs the same game reducer for multiplayer games
+- Filters state per player (anti-cheat)
+- Broadcasts updates in real-time
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    SHARED LOGIC                      │
+│                  src/game/*.js                        │
+│   (pure functions — runs on client AND server)       │
+└────────┬─────────────────────────────────┬──────────┘
+         │                                 │
+    ┌────▼────┐                      ┌─────▼─────┐
+    │ CLIENT  │                      │  SERVER   │
+    │ React   │◄═══ WebSocket ═══►   │  Node.js  │
+    │ Hooks   │                      │  Rooms    │
+    │ UI      │                      │  Filter   │
+    └─────────┘                      └───────────┘
+```
+
+---
+
+## 📁 Folder Structure
+
+```
+kabo/
+│
+├── server/                          # Backend (multiplayer)
+│   ├── index.js                     # Express + Socket.IO server entry
+│   ├── roomManager.js               # Room create/join/leave logic
+│   ├── gameHandler.js               # Processes game actions via shared reducer
+│   └── stateFilter.js               # Hides opponents' cards before sending
+│
+├── src/
+│   ├── game/                        # Pure game logic (shared client + server)
+│   │   ├── constants.js             # All game enums and config
+│   │   ├── types.js                 # JSDoc type definitions
+│   │   ├── deck.js                  # Card deck creation + shuffling
+│   │   ├── rules.js                 # Game initialization (createInitialState)
+│   │   ├── actions.js               # Core game reducer (gameReducer)
+│   │   ├── validators.js            # Action validation logic
+│   │   ├── scoring.js               # End-game scoring with Kabo bonus/penalty
+│   │   └── index.js                 # Barrel export for clean imports
+│   │
+│   ├── hooks/                       # React state management
+│   │   ├── useGameState.js          # Local game state (runs reducer in browser)
+│   │   ├── useMultiplayerState.js   # Online state (Socket.IO ↔ server)
+│   │   ├── useGameEvents.js         # Event consumer for animations
+│   │   └── useAnimationQueue.js     # Sequential animation queue
+│   │
+│   ├── components/                  # React UI components
+│   │   ├── Card.jsx                 # Individual card (face-up/down, animations)
+│   │   ├── PlayerHand.jsx           # Row of cards for a player
+│   │   ├── PlayerPosition.jsx       # Circular table positioning for a player
+│   │   ├── TableCenter.jsx          # Deck pile + discard pile + drawn card
+│   │   ├── GameBoard.jsx            # Local play game board (orchestrator)
+│   │   ├── MultiplayerGameBoard.jsx # Online play game board (orchestrator)
+│   │   ├── StartScreen.jsx          # Main menu (local vs online)
+│   │   ├── LobbyScreen.jsx          # Room create/join/ready interface
+│   │   ├── PeekPhaseUI.jsx          # Setup phase — peek at your cards
+│   │   ├── PowerUpUI.jsx            # Queen swap / Nine peek overlay
+│   │   ├── StackPhaseUI.jsx         # Stack rule with countdown timer
+│   │   ├── GameEndScreen.jsx        # Final scores & winner
+│   │   └── GameStatus.jsx           # Top bar (turn, phase, connection)
+│   │
+│   ├── styles/                      # CSS design system
+│   │   ├── variables.css            # Design tokens (colors, fonts, spacing)
+│   │   ├── gameboard.css            # Table and player layout
+│   │   ├── cards.css                # Card visuals and animations
+│   │   ├── startscreen.css          # Start screen design
+│   │   ├── lobby.css                # Lobby screen design
+│   │   └── overlays.css             # Modals, peek, power-ups, game end
+│   │
+│   ├── App.jsx                      # Root — routes between menu/local/online
+│   ├── main.jsx                     # React DOM entry point
+│   └── style.css                    # Tailwind import
+│
+├── public/cards/                    # Card images (PNG)
+├── package.json
+├── vite.config.js                   # Dev proxy for Socket.IO
+└── README.md                        # This file!
+```
+
+---
+
+## 🛠️ Technologies Used
+
+| Technology | Purpose |
+|-----------|---------|
+| **React 19** | Frontend UI framework |
+| **Vite 7** | Fast dev server and bundler |
+| **Node.js** | Backend runtime |
+| **Express** | HTTP server for API + static files |
+| **Socket.IO** | Real-time WebSocket communication |
+| **Tailwind CSS v4** | Utility CSS framework |
+| **Vanilla CSS** | Custom design system (variables.css) |
+
+---
+
+## 📝 NPM Scripts
+
+| Command | What it does |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server (frontend) |
+| `npm run server` | Start the multiplayer game server |
+| `npm run build` | Build production bundle |
+| `npm run preview` | Preview production build |
+
+**To play locally**: Just run `npm run dev`
+**To play online**: Run BOTH `npm run server` AND `npm run dev`
+
+---
+
+## 🤝 Contributing
+
+The codebase is designed for readability:
+- **`src/game/`** — Pure logic, no framework dependencies. Great starting point to understand the rules.
+- **`server/`** — Multiplayer backend. Each file has doc comments explaining its role.
+- **`src/components/`** — React components. Each is focused on one piece of the UI.
+
+Every file has header comments explaining what it does and how it connects to other parts of the system.

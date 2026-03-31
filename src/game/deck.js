@@ -1,51 +1,77 @@
 /**
- * createDeck()
- * Builds and returns a shuffled 52‑card deck for the game.
- * Source: cards are generated locally (no external data).
- * Destination: the shuffled array is returned to the caller (typically used as the draw pile).
- * - Number cards: ranks 1–10 with value equal to rank.
- * - Face cards: J=11, Q=12.
- * - Kings: red (hearts/diamonds) have value 0, black (spades/clubs) have value 13.
- * Returns: Array of { rank: number|string, suit: string, value: number }.
+ * Agent 2: Game Logic Engineer
+ * deck.js — Deck creation and shuffling
+ */
+
+import { SUITS, RED_SUITS, FACE_CARD_VALUES } from './constants.js';
+
+/**
+ * Creates a shuffled 52-card deck.
+ *
+ * Card id format: `${suit}_${rank}` (e.g. "hearts_5", "spades_K")
+ * Number cards: rank 1–10, value = rank.
+ * Face cards: J = 11, Q = 12.
+ * Kings: red suits → 0, black suits → 13.
+ *
+ * @returns {import('./types.js').Card[]} Shuffled deck array (last = top)
  */
 export function createDeck() {
+  /** @type {import('./types.js').Card[]} */
   const deck = [];
-  const suits = ["hearts", "diamonds", "spades", "clubs"];
 
-  // Add number cards 1–10 for each suit (value equals rank).
+  // Number cards 1–10
   for (let num = 1; num <= 10; num++) {
-    suits.forEach(suit => {
-      deck.push({ rank: num, suit, value: num });
+    for (const suit of SUITS) {
+      deck.push({
+        rank: num,
+        suit,
+        value: num,
+        id: `${suit}_${num}`,
+      });
+    }
+  }
+
+  // Face cards
+  for (const suit of SUITS) {
+    // Jack
+    deck.push({
+      rank: 'J',
+      suit,
+      value: FACE_CARD_VALUES.J,
+      id: `${suit}_J`,
+    });
+
+    // Queen
+    deck.push({
+      rank: 'Q',
+      suit,
+      value: FACE_CARD_VALUES.Q,
+      id: `${suit}_Q`,
+    });
+
+    // King — red = 0, black = 13
+    const kingValue = RED_SUITS.includes(suit) ? 0 : 13;
+    deck.push({
+      rank: 'K',
+      suit,
+      value: kingValue,
+      id: `${suit}_K`,
     });
   }
 
-  // Add face cards J and Q for each suit, then apply special King values.
-  suits.forEach(suit => {
-    deck.push({ rank: "J", suit, value: 11 });
-    deck.push({ rank: "Q", suit, value: 12 });
-
-    // Kings: red suits → value 0, black suits → value 13.
-    if (suit === "hearts" || suit === "diamonds") {
-      deck.push({ rank: "K", suit, value: 0 });
-    } else {
-      deck.push({ rank: "K", suit, value: 13 });
-    }
-  });
-
-  // Shuffle the completed deck and return it.
   return shuffle(deck);
 }
 
 /**
- * shuffle(deck)
- * Fisher–Yates shuffle that randomizes the array in place.
- * Source: the deck array provided as argument.
- * Destination: mutates and returns the same array randomized.
+ * Fisher–Yates in-place shuffle.
+ *
+ * @param {any[]} arr - Array to shuffle
+ * @returns {any[]} The same array, shuffled
  */
-function shuffle(deck) {
-  for (let i = deck.length - 1; i > 0; i--) {
+export function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-  return deck;
+  return arr;
 }

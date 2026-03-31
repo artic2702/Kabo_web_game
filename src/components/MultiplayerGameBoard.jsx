@@ -1,10 +1,10 @@
 /**
- * GameBoard.jsx — LOCAL play game board
- * Uses useGameState hook for local-only game logic.
+ * MultiplayerGameBoard.jsx — ONLINE play game board
+ * Uses multiplayer state hook (socket-based) for server-authoritative gameplay.
+ * Player only sees their own perspective — server filters hidden cards.
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { useGameState } from '../hooks/useGameState';
 import {
   ACTION_TYPES,
   GAME_PHASES,
@@ -25,24 +25,19 @@ import '../styles/gameboard.css';
 import '../styles/cards.css';
 import '../styles/overlays.css';
 
-export default function GameBoard({ initialPlayerCount, onBack }) {
+export default function MultiplayerGameBoard({ mp, onBack }) {
   const {
     gameState,
     dispatch,
     validActions,
-    startGame,
+    connectionStatus,
+    roomCode,
+    playerId: myPlayerId,
     restartGame,
-  } = useGameState();
+  } = mp;
 
   const [peekedCard, setPeekedCard] = useState(null);
   const [endGameData, setEndGameData] = useState(null);
-
-  // Start game on mount
-  useEffect(() => {
-    if (!gameState && initialPlayerCount) {
-      startGame(initialPlayerCount);
-    }
-  }, [initialPlayerCount]);
 
   // Track game end
   const prevPhaseRef = useRef(null);
@@ -57,18 +52,18 @@ export default function GameBoard({ initialPlayerCount, onBack }) {
     prevPhaseRef.current = gameState?.gamePhase;
   }, [gameState?.gamePhase]);
 
-  // Auto-end turn
+  // Auto-end turn (only if it's MY turn)
   useEffect(() => {
     if (!gameState) return;
-    if (gameState.turnPhase === TURN_PHASES.TURN_END) {
+    if (gameState.turnPhase === TURN_PHASES.TURN_END && gameState.currentTurn === myPlayerId) {
       const timer = setTimeout(() => {
         dispatch({ type: ACTION_TYPES.END_TURN, payload: {} });
       }, 600);
       return () => clearTimeout(timer);
     }
-  }, [gameState?.turnPhase, dispatch]);
+  }, [gameState?.turnPhase, gameState?.currentTurn, myPlayerId, dispatch]);
 
-  // Auto-end empty stack phase
+  // Auto-end empty stack phase (server handles this, but client can request too)
   useEffect(() => {
     if (!gameState) return;
     if (gameState.stackPhaseActive && gameState.stackEligiblePlayers.length === 0) {
@@ -83,13 +78,18 @@ export default function GameBoard({ initialPlayerCount, onBack }) {
 
   const game = gameState;
   const currentPlayer = game.players[game.currentTurn];
+  const myPlayer = game.players[myPlayerId];
+  const isMyTurn = game.currentTurn === myPlayerId;
   const canDo = (type) => validActions.includes(type);
+  const deckCount = typeof game.deck === 'number' ? game.deck : (game.deck?.length ?? 0);
 
   // Handlers
   const handlePeek = (cardIndex) => {
     dispatch({ type: ACTION_TYPES.PEEK_CARD, payload: { cardIndex } });
     const player = game.players[game.peekPhasePlayer];
-    if (player?.hand[cardIndex]) setPeekedCard(player.hand[cardIndex]);
+    if (player?.hand[cardIndex] && !player.hand[cardIndex].hidden) {
+      setPeekedCard(player.hand[cardIndex]);
+    }
   };
 
   const handleFinishPeek = () => {
@@ -103,72 +103,87 @@ export default function GameBoard({ initialPlayerCount, onBack }) {
   };
 
   const handleCardClick = (playerIndex) => (cardIndex) => {
+    // Exchange during deciding (own cards only, own turn only)
     if (
-      playerIndex === game.currentTurn && game.drawnCard &&
+      isMyTurn && playerIndex === game.currentTurn && game.drawnCard &&
       (game.turnPhase === TURN_PHASES.DECIDING || game.turnPhase === TURN_PHASES.DECIDING_DISCARD)
     ) {
       dispatch({ type: ACTION_TYPES.EXCHANGE_WITH_HAND, payload: { handIndex: cardIndex } });
       return;
     }
-    if (game.powerMode === 'queen' && game.turnPhase === TURN_PHASES.POWER_UP) {
+    // Queen power — only the current turn player can select
+    if (isMyTurn && game.powerMode === 'queen' && game.turnPhase === TURN_PHASES.POWER_UP) {
       dispatch({ type: ACTION_TYPES.QUEEN_SELECT_CARD, payload: { playerId: playerIndex, cardIndex } });
       return;
     }
-    if (game.powerMode === 'nine' && game.turnPhase === TURN_PHASES.POWER_UP && playerIndex === game.currentTurn) {
+    // Nine power — only current turn player, own cards
+    if (isMyTurn && game.powerMode === 'nine' && game.turnPhase === TURN_PHASES.POWER_UP && playerIndex === game.currentTurn) {
       dispatch({ type: ACTION_TYPES.NINE_PEEK, payload: { cardIndex } });
       return;
     }
-    if (game.stackPhaseActive && game.stackEligiblePlayers.includes(playerIndex)) {
-      dispatch({ type: ACTION_TYPES.STACK_DROP, payload: { playerId: playerIndex, handIndex: cardIndex } });
+    // Stack — only if I'm eligible
+    if (game.stackPhaseActive && game.stackEligiblePlayers.includes(myPlayerId) && playerIndex === myPlayerId) {
+      dispatch({ type: ACTION_TYPES.STACK_DROP, payload: { playerId: myPlayerId, handIndex: cardIndex } });
       return;
     }
   };
 
   const getCanSelectCards = (playerIndex) => {
-    if (playerIndex === game.currentTurn && game.drawnCard &&
+    if (isMyTurn && playerIndex === game.currentTurn && game.drawnCard &&
         (game.turnPhase === TURN_PHASES.DECIDING || game.turnPhase === TURN_PHASES.DECIDING_DISCARD)) return true;
-    if (game.powerMode === 'queen' && game.turnPhase === TURN_PHASES.POWER_UP) return true;
-    if (game.powerMode === 'nine' && game.turnPhase === TURN_PHASES.POWER_UP && playerIndex === game.currentTurn) return true;
-    if (game.stackPhaseActive && game.stackEligiblePlayers.includes(playerIndex)) return true;
+    if (isMyTurn && game.powerMode === 'queen' && game.turnPhase === TURN_PHASES.POWER_UP) return true;
+    if (isMyTurn && game.powerMode === 'nine' && game.turnPhase === TURN_PHASES.POWER_UP && playerIndex === game.currentTurn) return true;
+    if (game.stackPhaseActive && game.stackEligiblePlayers.includes(myPlayerId) && playerIndex === myPlayerId) return true;
     return false;
   };
 
-  const topDiscard = game.discard.length > 0 ? game.discard[game.discard.length - 1] : null;
+  const topDiscard = game.discard?.length > 0 ? game.discard[game.discard.length - 1] : null;
+
+  // Reorder players so "me" is always at the bottom
+  const reorderedPlayers = [];
+  const playerCount = game.players.length;
+  for (let i = 0; i < playerCount; i++) {
+    reorderedPlayers.push(game.players[(myPlayerId + i) % playerCount]);
+  }
 
   return (
     <div className="game-board">
       {/* Back button */}
       <button className="btn btn-ghost" onClick={onBack} style={{
         position: 'fixed', top: '16px', left: '16px', zIndex: 50, fontSize: '13px',
-      }}>← Menu</button>
+      }}>← Leave</button>
 
       <div className="table-container">
         <div className="players-circle">
-          {game.players.map((player, index) => (
-            <PlayerPosition
-              key={player.id}
-              player={player}
-              index={index}
-              totalPlayers={game.players.length}
-              isCurrentTurn={game.currentTurn === index && (game.gamePhase === GAME_PHASES.PLAYING || game.gamePhase === GAME_PHASES.FINAL_ROUND)}
-              canSelectCards={getCanSelectCards(index)}
-              onCardClick={handleCardClick(index)}
-              highlightedCards={[]}
-              scores={endGameData?.scores}
-              winners={endGameData?.winners}
-            />
-          ))}
+          {reorderedPlayers.map((player, visualIndex) => {
+            const realIndex = player.id;
+            return (
+              <PlayerPosition
+                key={player.id}
+                player={player}
+                index={visualIndex}
+                totalPlayers={playerCount}
+                isCurrentTurn={game.currentTurn === realIndex && (game.gamePhase === GAME_PHASES.PLAYING || game.gamePhase === GAME_PHASES.FINAL_ROUND)}
+                canSelectCards={getCanSelectCards(realIndex)}
+                onCardClick={handleCardClick(realIndex)}
+                highlightedCards={[]}
+                scores={endGameData?.scores}
+                winners={endGameData?.winners}
+                isMe={realIndex === myPlayerId}
+              />
+            );
+          })}
         </div>
         <TableCenter
-          deckCount={game.deck.length}
+          deckCount={deckCount}
           topDiscard={topDiscard}
-          drawnCard={game.drawnCard}
+          drawnCard={isMyTurn ? game.drawnCard : null}
           onDrawDeck={() => dispatch({ type: ACTION_TYPES.DRAW_FROM_DECK, payload: {} })}
           onDrawDiscard={() => dispatch({ type: ACTION_TYPES.DRAW_FROM_DISCARD, payload: {} })}
           onThrowCard={() => dispatch({ type: ACTION_TYPES.THROW_DRAWN_CARD, payload: {} })}
-          canDraw={canDo(ACTION_TYPES.DRAW_FROM_DECK) || canDo(ACTION_TYPES.DRAW_FROM_DISCARD)}
-          canThrow={canDo(ACTION_TYPES.THROW_DRAWN_CARD)}
-          canExchange={canDo(ACTION_TYPES.EXCHANGE_WITH_HAND)}
+          canDraw={isMyTurn && (canDo(ACTION_TYPES.DRAW_FROM_DECK) || canDo(ACTION_TYPES.DRAW_FROM_DISCARD))}
+          canThrow={isMyTurn && canDo(ACTION_TYPES.THROW_DRAWN_CARD)}
+          canExchange={isMyTurn && canDo(ACTION_TYPES.EXCHANGE_WITH_HAND)}
         />
       </div>
 
@@ -178,9 +193,13 @@ export default function GameBoard({ initialPlayerCount, onBack }) {
         turnPhase={game.turnPhase}
         kaboCalledBy={game.kaboCalledBy}
         players={game.players}
+        connectionStatus={connectionStatus}
+        roomCode={roomCode}
+        myPlayerId={myPlayerId}
+        currentTurn={game.currentTurn}
       />
 
-      {canDo(ACTION_TYPES.CALL_KABO) && (
+      {isMyTurn && canDo(ACTION_TYPES.CALL_KABO) && (
         <div className="action-panel glass-dark">
           <button className="btn btn-kabo" onClick={() => dispatch({ type: ACTION_TYPES.CALL_KABO, payload: {} })}>
             KABO!
@@ -189,19 +208,20 @@ export default function GameBoard({ initialPlayerCount, onBack }) {
         </div>
       )}
 
-      {game.gamePhase === GAME_PHASES.SETUP && game.peekPhasePlayer !== null && (
-        <PeekPhaseUI currentPlayer={game.players[game.peekPhasePlayer]} peekedCardData={peekedCard}
+      {game.gamePhase === GAME_PHASES.SETUP && game.peekPhasePlayer === myPlayerId && (
+        <PeekPhaseUI currentPlayer={myPlayer} peekedCardData={peekedCard}
           onPeek={handlePeek} onFinish={handleFinishPeek} onReset={handleResetPeek} />
       )}
 
-      {game.powerMode && game.turnPhase === TURN_PHASES.POWER_UP && (
+      {isMyTurn && game.powerMode && game.turnPhase === TURN_PHASES.POWER_UP && (
         <PowerUpUI powerMode={game.powerMode} powerState={game.powerState}
           currentPlayerName={currentPlayer?.name}
           onSkip={() => dispatch({ type: ACTION_TYPES.SKIP_POWER, payload: {} })} />
       )}
 
-      {game.stackPhaseActive && game.stackEligiblePlayers.length > 0 && (
-        <StackPhaseUI stackRank={game.stackRank} stackEligiblePlayers={game.stackEligiblePlayers}
+      {game.stackPhaseActive && game.stackEligiblePlayers.includes(myPlayerId) && (
+        <StackPhaseUI stackRank={game.stackRank}
+          stackEligiblePlayers={[myPlayerId]}
           players={game.players}
           onPass={(id) => dispatch({ type: ACTION_TYPES.STACK_PASS, payload: { playerId: id } })} />
       )}
@@ -209,7 +229,7 @@ export default function GameBoard({ initialPlayerCount, onBack }) {
       {game.gamePhase === GAME_PHASES.ENDED && endGameData && (
         <GameEndScreen scores={endGameData.scores} winners={endGameData.winners}
           kaboCalledBy={game.kaboCalledBy} players={game.players}
-          onRestart={() => { setEndGameData(null); restartGame(); }} />
+          onRestart={onBack} />
       )}
     </div>
   );

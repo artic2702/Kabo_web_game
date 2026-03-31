@@ -1,49 +1,56 @@
-import Card from "./Card";
+/**
+ * Agent 3: UI/UX Engineer
+ * PlayerPosition.jsx — Circular player positioning
+ */
+
+import PlayerHand from './PlayerHand';
 
 export default function PlayerPosition({
   player,
   index,
   totalPlayers,
   isCurrentTurn,
-  isSelected,
-  selectedCardIndex,
-  onSelectCard,
+  canSelectCards,
+  onCardClick,
+  highlightedCards,
+  scores,
+  winners,
 }) {
   // Calculate angle for circular positioning
   const angle = (index / totalPlayers) * 360;
-  const radius = 300; // Distance from center
+  const radius = 320; // Distance from center
   const x = Math.cos((angle - 90) * (Math.PI / 180)) * radius;
   const y = Math.sin((angle - 90) * (Math.PI / 180)) * radius;
 
+  const isWinner = winners?.some(w => w.playerId === player.id);
+  const playerScore = scores?.find(s => s.playerId === player.id);
+
   return (
     <div
-      className={`player-position ${isCurrentTurn ? "current-turn" : ""}`}
+      className={`player-position ${isCurrentTurn ? 'current-turn' : ''}`}
       style={{
         transform: `translate(${x}px, ${y}px)`,
       }}
     >
-      {/* Player name */}
+      {/* Player name badge */}
       <div className="player-name">{player.name}</div>
 
-      {/* Player's 4 cards in a row */}
-      <div className="player-hand">
-        {player.hand.map((card, cardIndex) => (
-          <Card
-            key={cardIndex}
-            card={card}
-            faceUp={player.visible[cardIndex] || player.revealed}
-            cardIndex={cardIndex}
-            onClick={onSelectCard}
-            isSelectable={isSelected}
-            isSelected={selectedCardIndex === cardIndex}
-          />
-        ))}
-      </div>
+      {/* Player's cards */}
+      <PlayerHand
+        player={player}
+        isCurrentTurn={isCurrentTurn}
+        canSelectCards={canSelectCards}
+        onCardClick={onCardClick}
+        highlightedCards={highlightedCards}
+      />
 
       {/* Score display (game end) */}
-      {player.revealed && (
-        <div className="player-score">
-          Score: {player.hand.reduce((sum, card) => sum + card.value, 0)}
+      {player.revealed && playerScore && (
+        <div className={`player-score ${isWinner ? 'winner' : ''}`}>
+          {isWinner ? '👑 ' : ''}
+          {playerScore.score} pts
+          {playerScore.kaboBonus && ' ⭐'}
+          {playerScore.kaboPenalty && ' +10'}
         </div>
       )}
     </div>
