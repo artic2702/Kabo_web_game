@@ -21,14 +21,27 @@ export default function StartScreen({ onStartLocal, onPlayOnline }) {
     <div className="start-screen">
       {/* Floating card decoration */}
       <div className="floating-cards" aria-hidden="true">
+        {/* Corners */}
         <span className="float-card fc-1">🂡</span>
         <span className="float-card fc-2">🂮</span>
         <span className="float-card fc-3">🃏</span>
         <span className="float-card fc-4">🂫</span>
+        {/* Left edge */}
         <span className="float-card fc-5">🂢</span>
         <span className="float-card fc-6">🂾</span>
         <span className="float-card fc-7">🃁</span>
+        {/* Right edge */}
         <span className="float-card fc-8">🂩</span>
+        <span className="float-card fc-9">🂳</span>
+        <span className="float-card fc-10">🃍</span>
+        {/* Top row */}
+        <span className="float-card fc-11">🂧</span>
+        <span className="float-card fc-12">🂻</span>
+        <span className="float-card fc-13">🃅</span>
+        {/* Bottom row */}
+        <span className="float-card fc-14">🂤</span>
+        <span className="float-card fc-15">🂸</span>
+        <span className="float-card fc-16">🃉</span>
       </div>
 
       <div className="start-container">
