@@ -1,95 +1,46 @@
 /**
- * StartScreen.jsx — Premium landing page for Kabo
- * Two clear paths: Local Play and Online Multiplayer
+ * StartScreen.jsx — Offline Setup (player count selection)
+ * Dark room + green felt table background
  */
 
-import { useState } from 'react';
 import { GAME_CONFIG } from '../game/constants.js';
-import '../styles/variables.css';
-import '../styles/startscreen.css';
+import '../styles/landing.css';
 
-export default function StartScreen({ onStartLocal, onPlayOnline }) {
-  const [playerCount, setPlayerCount] = useState(2);
-
-  const handleStartLocal = () => {
-    if (playerCount >= GAME_CONFIG.MIN_PLAYERS && playerCount <= GAME_CONFIG.MAX_PLAYERS) {
-      onStartLocal(playerCount);
+export default function StartScreen({ onStartLocal, onBack }) {
+  const handleStart = (count) => {
+    if (count >= GAME_CONFIG.MIN_PLAYERS && count <= GAME_CONFIG.MAX_PLAYERS) {
+      onStartLocal(count);
     }
   };
 
+  const playerOptions = [];
+  for (let i = GAME_CONFIG.MIN_PLAYERS; i <= GAME_CONFIG.MAX_PLAYERS; i++) {
+    playerOptions.push(i);
+  }
+
   return (
-    <div className="start-screen">
-      {/* Floating card decoration */}
-      <div className="floating-cards" aria-hidden="true">
-        {/* Corners */}
-        <span className="float-card fc-1">🂡</span>
-        <span className="float-card fc-2">🂮</span>
-        <span className="float-card fc-3">🃏</span>
-        <span className="float-card fc-4">🂫</span>
-        {/* Left edge */}
-        <span className="float-card fc-5">🂢</span>
-        <span className="float-card fc-6">🂾</span>
-        <span className="float-card fc-7">🃁</span>
-        {/* Right edge */}
-        <span className="float-card fc-8">🂩</span>
-        <span className="float-card fc-9">🂳</span>
-        <span className="float-card fc-10">🃍</span>
-        {/* Top row */}
-        <span className="float-card fc-11">🂧</span>
-        <span className="float-card fc-12">🂻</span>
-        <span className="float-card fc-13">🃅</span>
-        {/* Bottom row */}
-        <span className="float-card fc-14">🂤</span>
-        <span className="float-card fc-15">🂸</span>
-        <span className="float-card fc-16">🃉</span>
-      </div>
+    <div className="spotlight-page">
+      <div className="table-felt" />
 
-      <div className="start-container">
-        {/* Logo */}
-        <div className="start-logo">
-          <h1 className="start-title">KABO</h1>
-          <div className="start-tagline">The Memory Card Game</div>
+      <div className="table-content">
+        <h2>Local Play</h2>
+        <p>Select number of players</p>
+
+        <div className="player-count-grid">
+          {playerOptions.map((count) => (
+            <button
+              key={count}
+              className="player-count-btn"
+              onClick={() => handleStart(count)}
+            >
+              {count}
+            </button>
+          ))}
         </div>
 
-        {/* Mode Cards */}
-        <div className="mode-cards">
-          {/* Local Mode */}
-          <div className="mode-card mode-local" onClick={handleStartLocal}>
-            <div className="mode-icon">🎲</div>
-            <div className="mode-label">Local Play</div>
-            <div className="mode-desc">Same device, take turns</div>
-            <div className="mode-player-select" onClick={e => e.stopPropagation()}>
-              <button
-                className="mode-count-btn"
-                onClick={() => setPlayerCount(Math.max(GAME_CONFIG.MIN_PLAYERS, playerCount - 1))}
-              >−</button>
-              <span className="mode-count">{playerCount}</span>
-              <button
-                className="mode-count-btn"
-                onClick={() => setPlayerCount(Math.min(GAME_CONFIG.MAX_PLAYERS, playerCount + 1))}
-              >+</button>
-              <span className="mode-count-label">players</span>
-            </div>
-            <div className="mode-action">Start Game →</div>
-          </div>
-
-          {/* Online Mode */}
-          <div className="mode-card mode-online" onClick={onPlayOnline}>
-            <div className="mode-icon">🌐</div>
-            <div className="mode-label">Play Online</div>
-            <div className="mode-desc">Create or join a room</div>
-            <div className="mode-feature-list">
-              <span>🔗 Room codes</span>
-              <span>⚡ Real-time</span>
-            </div>
-            <div className="mode-action">Play with Friends →</div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="start-footer">
-          <p>2–5 players • Lowest score wins • Memorize your cards!</p>
-        </div>
+        <button className="setup-back" onClick={onBack}>
+          ← Back
+        </button>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 /**
  * App.jsx — Root component with mode routing
- * Handles switching between local play, online lobby, and multiplayer game
+ * Flow: landing → menu (StartScreen) or online (lobby) → game
  */
 
 import { useState } from 'react';
@@ -8,13 +8,23 @@ import GameBoard from './components/GameBoard';
 import MultiplayerGameBoard from './components/MultiplayerGameBoard';
 import StartScreen from './components/StartScreen';
 import LobbyScreen from './components/LobbyScreen';
+import LandingAnimation from './components/LandingAnimation';
 import { useMultiplayerState } from './hooks/useMultiplayerState';
 
 export default function App() {
-  const [mode, setMode] = useState('menu'); // 'menu' | 'local' | 'online'
+  const [mode, setMode] = useState('landing'); // 'landing' | 'menu' | 'local' | 'online'
   const [localPlayerCount, setLocalPlayerCount] = useState(null);
 
   const mp = useMultiplayerState();
+
+  // Landing animation completed — route based on choice
+  const handleLandingComplete = (choice) => {
+    if (choice === 'online') {
+      setMode('online');
+    } else {
+      setMode('menu'); // go to StartScreen for player count
+    }
+  };
 
   // Start local game
   const handleStartLocal = (playerCount) => {
@@ -27,28 +37,33 @@ export default function App() {
     setMode('online');
   };
 
-  // Back to menu
-  const handleBackToMenu = () => {
+  // Back to landing
+  const handleBackToLanding = () => {
     if (mp.roomCode) {
       mp.leaveRoom();
     }
-    setMode('menu');
+    setMode('landing');
     setLocalPlayerCount(null);
   };
 
-  // ── Menu / Start Screen ──
+  // ── Landing Animation ──
+  if (mode === 'landing') {
+    return <LandingAnimation onComplete={handleLandingComplete} />;
+  }
+
+  // ── Menu / Start Screen (player count selection) ──
   if (mode === 'menu') {
     return (
       <StartScreen
         onStartLocal={handleStartLocal}
-        onPlayOnline={handlePlayOnline}
+        onBack={handleBackToLanding}
       />
     );
   }
 
   // ── Local Play ──
   if (mode === 'local') {
-    return <GameBoard initialPlayerCount={localPlayerCount} onBack={handleBackToMenu} />;
+    return <GameBoard initialPlayerCount={localPlayerCount} onBack={handleBackToLanding} />;
   }
 
   // ── Online Play ──
@@ -58,7 +73,7 @@ export default function App() {
       return (
         <MultiplayerGameBoard
           mp={mp}
-          onBack={handleBackToMenu}
+          onBack={handleBackToLanding}
         />
       );
     }
@@ -77,7 +92,7 @@ export default function App() {
         onLeaveRoom={mp.leaveRoom}
         onReady={mp.setReady}
         onStartGame={mp.startGame}
-        onBack={handleBackToMenu}
+        onBack={handleBackToLanding}
       />
     );
   }

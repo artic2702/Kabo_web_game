@@ -1,0 +1,652 @@
+/**
+ * landing.css — Cinematic landing experience (FRESH)
+ *
+ * Layers (bottom to top):
+ *   1. Black background
+ *   2. Green felt table texture (full screen, clipped by spotlight)
+ *   3. SVG spotlight overlay (black with circular cutout)
+ *   4. KABO title
+ *   5. Cards
+ *
+ * The spotlight mask reveals the table texture only in the circle.
+ */
+
+/* ══════════════════════════════════════════════════════
+   ROOT STAGE — Fullscreen dark room
+   ══════════════════════════════════════════════════════ */
+
+.landing-stage {
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   TABLE FELT — Green texture (visible through spotlight)
+   ══════════════════════════════════════════════════════ */
+
+.table-felt {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* User's green felt texture */
+  background:
+    url('/table-felt.jpg') center / cover no-repeat;
+  /* Slight darkening at edges for depth */
+  filter: brightness(0.85) saturate(1.1);
+}
+
+/* Subtle vignette over the felt */
+.table-felt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center,
+      transparent 20%,
+      rgba(0, 0, 0, 0.3) 60%,
+      rgba(0, 0, 0, 0.6) 100%);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   SPOTLIGHT — Faded gradient vignette (poker table look)
+   Two layers that cross-fade:
+   1. spotlight-vignette: solid black (initial state, fades OUT)
+   2. spotlight-gradient: radial gradient (fades IN to reveal table)
+   ══════════════════════════════════════════════════════ */
+
+/* Solid black cover — fades out when lamp turns on */
+.spotlight-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: #000;
+  pointer-events: none;
+}
+
+/* Radial gradient — dark edges, transparent center (the spotlight) */
+.spotlight-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+      /* Bright center — fully transparent (table visible) */
+      transparent 0%,
+      transparent 18%,
+      /* Gradual fade to darkness */
+      rgba(0, 0, 0, 0.1) 25%,
+      rgba(0, 0, 0, 0.3) 35%,
+      rgba(0, 0, 0, 0.55) 45%,
+      rgba(0, 0, 0, 0.75) 55%,
+      rgba(0, 0, 0, 0.88) 65%,
+      rgba(0, 0, 0, 0.95) 75%,
+      #000 85%);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   KABO TITLE — Printed / glowing on the table surface
+   ══════════════════════════════════════════════════════ */
+
+.kabo-title-container {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.kabo-title {
+  font-size: 7rem;
+  font-weight: 900;
+  letter-spacing: 18px;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  margin: 0;
+  line-height: 1;
+  user-select: none;
+}
+
+/* No glow behind title */
+.kabo-glow {
+  display: none;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   CARDS CONTAINER — Centered on table
+   ══════════════════════════════════════════════════════ */
+
+.cards-container {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+  pointer-events: none;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   CARD OPTION — 3D flipping card
+   ══════════════════════════════════════════════════════ */
+
+.card-option-wrapper {
+  width: 170px;
+  height: 250px;
+  cursor: pointer;
+  position: relative;
+  pointer-events: auto;
+}
+
+/* 3D container */
+.card-option-3d {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/* Shared card face base */
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Back face ── */
+.card-back {
+  transform: rotateY(180deg);
+}
+
+.card-back img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* ── Front face ── */
+.card-front {
+  background: linear-gradient(145deg,
+      #fefefe 0%,
+      #f8f8f0 30%,
+      #f0ede4 100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-front-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+.card-label {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.card-desc {
+  font-size: 0.75rem;
+  color: #888;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Card shadow on table surface */
+.card-table-shadow {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 16px;
+  background: radial-gradient(ellipse,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.2) 50%,
+      transparent 80%);
+  border-radius: 50%;
+  filter: blur(3px);
+  z-index: -1;
+}
+
+/* Hover glow effect */
+.card-option-wrapper:hover .card-face {
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    0 16px 48px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(255, 220, 150, 0.1);
+}
+
+.card-option-wrapper:hover .card-table-shadow {
+  width: 160px;
+  height: 12px;
+  bottom: -28px;
+  opacity: 0.4 !important;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   SHARED SPOTLIGHT THEME (for setup/lobby pages)
+   Same dark room + table look
+   ══════════════════════════════════════════════════════ */
+
+.spotlight-page {
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Table felt background on setup pages */
+.spotlight-page .table-felt {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('/table-felt.jpg') center / cover no-repeat;
+  filter: brightness(0.7) saturate(1.1);
+}
+
+/* Same faded vignette as landing spotlight */
+.spotlight-page .table-felt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center,
+      transparent 0%,
+      transparent 18%,
+      rgba(0, 0, 0, 0.1) 25%,
+      rgba(0, 0, 0, 0.3) 35%,
+      rgba(0, 0, 0, 0.55) 45%,
+      rgba(0, 0, 0, 0.75) 55%,
+      rgba(0, 0, 0, 0.88) 65%,
+      rgba(0, 0, 0, 0.95) 75%,
+      #000 85%);
+}
+
+/* Content above the felt */
+.spotlight-page>.table-content {
+  position: relative;
+  z-index: 5;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   TABLE CONTENT — Setup/lobby content on the table
+   ══════════════════════════════════════════════════════ */
+
+.table-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 480px;
+  padding: 32px;
+  animation: contentFadeIn 0.6s ease 0.3s forwards;
+  opacity: 0;
+}
+
+.table-content h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+.table-content p {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   SETUP BUTTONS & INPUTS (reused across pages)
+   ══════════════════════════════════════════════════════ */
+
+.setup-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 1rem;
+  font-family: inherit;
+  text-align: center;
+  letter-spacing: 1px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.setup-input:focus {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+}
+
+.setup-code-input {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 8px;
+}
+
+.setup-btn {
+  width: 100%;
+  max-width: 320px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  letter-spacing: 1px;
+}
+
+.setup-btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: white;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+}
+
+.setup-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4);
+}
+
+.setup-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.setup-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+.setup-back {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  transition: color 0.2s;
+  font-family: inherit;
+}
+
+.setup-back:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.setup-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.setup-error {
+  color: #fca5a5;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  margin: 0;
+}
+
+.setup-hint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  margin: 0;
+  font-style: italic;
+}
+
+.setup-status {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   PLAYER COUNT BUTTONS (offline setup)
+   ══════════════════════════════════════════════════════ */
+
+.player-count-grid {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.player-count-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.player-count-btn:hover {
+  background: rgba(34, 197, 94, 0.25);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
+}
+
+
+/* ══════════════════════════════════════════════════════
+   ONLINE LOBBY STYLES
+   ══════════════════════════════════════════════════════ */
+
+.room-players-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 450px;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.room-player-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+}
+
+.room-player-item.is-me {
+  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.room-player-item.is-ready {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.room-player-item.room-player-empty {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.room-player-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  flex-shrink: 0;
+}
+
+.room-player-item.is-ready .room-player-avatar {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.room-player-avatar.avatar-empty {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.room-player-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.room-player-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-player-status {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.room-player-status.status-ready {
+  color: #4ade80;
+}
+
+.tag-you {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tag-host {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.table-content-room {
+  gap: 16px;
+  max-height: 80vh;
+  padding: 24px;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   KEYFRAMES
+   ══════════════════════════════════════════════════════ */
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .kabo-title {
+    font-size: 4rem;
+    letter-spacing: 10px;
+  }
+
+  .card-option-wrapper {
+    width: 130px;
+    height: 195px;
+  }
+
+  .cards-container {
+    gap: 24px;
+  }
+
+  .card-label {
+    font-size: 0.85rem;
+  }
+
+  .card-icon {
+    font-size: 1.8rem;
+  }
+}
