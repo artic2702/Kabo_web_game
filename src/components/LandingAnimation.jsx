@@ -2,91 +2,70 @@
  * LandingAnimation.jsx — Cinematic game intro sequence
  *
  * Full timeline:
- *   0.0s  → Dark screen
- *   0.8s  → Lamp ON sound + spotlight opens
- *   2.8s  → "KABO" title fades in on table
- *   4.8s  → Title fades out
- *   5.4s  → Cards thrown in + card slap sound
- *   7.2s  → Cards idle (interactive)
+ *   0.0s  → Dark screen (extended atmosphere)
+ *   1.5s  → Lamp sound plays + spotlight opens
+ *   2.3s  → "KABO" title fades in on table
+ *   4.3s  → Title fades out
+ *   5.0s  → Cards thrown in + card_play sounds (both with stagger)
+ *   6.8s  → Cards idle (interactive)
  *   click → Cards fall + navigate
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import SpotlightOverlay from './SpotlightOverlay';
-import CardOption from './CardOption';
-import '../styles/landing.css';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import SpotlightOverlay from "./SpotlightOverlay";
+import CardOption from "./CardOption";
+import "../styles/landing.css";
 
-// ── Sound helpers (Web Audio API — no external files needed) ──
-function playLampSound() {
+// ── Sound helpers (audio files) ──
+function playLampSound(canPlay) {
+  if (!canPlay) {
+    console.log("Audio not unlocked yet, skipping lamp sound");
+    return;
+  }
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // Click/switch sound
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.05);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.1);
-    // Hum
-    setTimeout(() => {
-      const hum = ctx.createOscillator();
-      const humGain = ctx.createGain();
-      hum.type = 'sine';
-      hum.frequency.value = 60;
-      humGain.gain.setValueAtTime(0.03, ctx.currentTime);
-      humGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
-      hum.connect(humGain).connect(ctx.destination);
-      hum.start();
-      hum.stop(ctx.currentTime + 1.5);
-    }, 50);
-  } catch (e) { /* Audio not available */ }
+    const audio = new Audio("/lamp_sound.m4a");
+    audio.volume = 0.8;
+    audio.currentTime = 0;
+    audio.play().then(() => console.log("Lamp sound playing")).catch((err) => console.warn("Lamp sound failed:", err.message));
+  } catch (e) {
+    console.warn("Lamp sound error:", e);
+  }
 }
 
-function playCardSlap() {
+function playCardSlap(canPlay) {
+  if (!canPlay) {
+    console.log("Audio not unlocked yet, skipping card sound");
+    return;
+  }
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // Short noise burst = card slap
-    const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 3);
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 2000;
-    src.connect(filter).connect(gain).connect(ctx.destination);
-    src.start();
-  } catch (e) { /* Audio not available */ }
+    const audio = new Audio("/card_play.m4a");
+    audio.volume = 0.8;
+    audio.currentTime = 0;
+    audio.play().then(() => console.log("Card sound playing")).catch((err) => console.warn("Card sound failed:", err.message));
+  } catch (e) {
+    console.warn("Card sound error:", e);
+  }
 }
 
 // ── Timeline phases ──
 const PHASES = {
-  DARK: 'dark',
-  SPOTLIGHT: 'spotlight',
-  TITLE: 'title',
-  TITLE_FADE: 'title_fade',
-  CARDS_ENTER: 'cards_enter',
-  CARDS_IDLE: 'cards_idle',
-  CARDS_EXIT: 'cards_exit',
-  DONE: 'done',
+  DARK: "dark",
+  SPOTLIGHT: "spotlight",
+  TITLE: "title",
+  TITLE_FADE: "title_fade",
+  CARDS_ENTER: "cards_enter",
+  CARDS_IDLE: "cards_idle",
+  CARDS_EXIT: "cards_exit",
+  DONE: "done",
 };
 
 // ── Timing (milliseconds) ──
 const TIMING = {
-  DARK_DURATION: 800,
+  DARK_DURATION: 1500,
   SPOTLIGHT_DURATION: 2000,
   TITLE_SHOW: 2000,
-  TITLE_FADE: 600,
+  TITLE_FADE: 200,
   CARDS_ENTER_DELAY: 600,
   CARDS_SETTLE: 1800,
   EXIT_DURATION: 800,
@@ -96,10 +75,40 @@ export default function LandingAnimation({ onComplete }) {
   const [phase, setPhase] = useState(PHASES.DARK);
   const [spotlightActive, setSpotlightActive] = useState(false);
   const [choice, setChoice] = useState(null);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
   const timerRef = useRef(null);
+
+  // ── Unlock audio on first user interaction ──
+  useEffect(() => {
+    const unlockAudio = () => {
+      // Create a dummy audio context to unlock autoplay
+      const audio = new Audio();
+      audio.play().catch(() => {});
+      setAudioUnlocked(true);
+      console.log("Audio unlocked");
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("keydown", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
+    };
+
+    document.addEventListener("click", unlockAudio);
+    document.addEventListener("keydown", unlockAudio);
+    document.addEventListener("touchstart", unlockAudio);
+
+    return () => {
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("keydown", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
+    };
+  }, []);
 
   // ── Auto-advance timeline ──
   useEffect(() => {
+    // Don't start animation until audio is unlocked
+    if (!audioUnlocked) {
+      return;
+    }
+
     const schedule = (fn, ms) => {
       timerRef.current = setTimeout(fn, ms);
     };
@@ -107,7 +116,7 @@ export default function LandingAnimation({ onComplete }) {
     switch (phase) {
       case PHASES.DARK:
         schedule(() => {
-          playLampSound();
+          playLampSound(audioUnlocked);
           setSpotlightActive(true);
           setPhase(PHASES.SPOTLIGHT);
         }, TIMING.DARK_DURATION);
@@ -122,8 +131,10 @@ export default function LandingAnimation({ onComplete }) {
         break;
 
       case PHASES.TITLE_FADE:
+        // Play card sounds immediately as title fades (before cards animate in)
+        playCardSlap(audioUnlocked);
+        setTimeout(() => playCardSlap(audioUnlocked), 150);
         schedule(() => {
-          playCardSlap();
           setPhase(PHASES.CARDS_ENTER);
         }, TIMING.TITLE_FADE);
         break;
@@ -141,7 +152,7 @@ export default function LandingAnimation({ onComplete }) {
     }
 
     return () => clearTimeout(timerRef.current);
-  }, [phase, choice, onComplete]);
+  }, [phase, choice, onComplete, audioUnlocked]);
 
   // ── Card click handler ──
   const handleCardClick = useCallback(
@@ -150,18 +161,18 @@ export default function LandingAnimation({ onComplete }) {
       setChoice(selected);
       setPhase(PHASES.CARDS_EXIT);
     },
-    [phase]
+    [phase],
   );
 
   // ── Derive card phase ──
   const cardPhase =
     phase === PHASES.CARDS_ENTER
-      ? 'entering'
+      ? "entering"
       : phase === PHASES.CARDS_IDLE
-        ? 'idle'
+        ? "idle"
         : phase === PHASES.CARDS_EXIT
-          ? 'exiting'
-          : 'hidden';
+          ? "exiting"
+          : "hidden";
 
   const showCards = [
     PHASES.CARDS_ENTER,
@@ -173,6 +184,15 @@ export default function LandingAnimation({ onComplete }) {
 
   return (
     <div className="landing-stage">
+      {/* Audio unlock overlay - click to start */}
+      {!audioUnlocked && (
+        <div className="audio-overlay" onClick={() => setAudioUnlocked(true)}>
+          <div className="audio-overlay-content">
+            <p>🔊 Click anywhere to start</p>
+          </div>
+        </div>
+      )}
+
       {/* Layer 1: Green felt table (always present, revealed by spotlight) */}
       <div className="table-felt" />
 
@@ -209,7 +229,7 @@ export default function LandingAnimation({ onComplete }) {
             side="left"
             phase={cardPhase}
             delay={0}
-            onClick={() => handleCardClick('local')}
+            onClick={() => handleCardClick("local")}
           />
           <CardOption
             label="PLAY ONLINE"
@@ -218,7 +238,7 @@ export default function LandingAnimation({ onComplete }) {
             side="right"
             phase={cardPhase}
             delay={0.15}
-            onClick={() => handleCardClick('online')}
+            onClick={() => handleCardClick("online")}
           />
         </div>
       )}

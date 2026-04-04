@@ -27,6 +27,51 @@
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
+/* Audio unlock overlay */
+.audio-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: fadeIn 0.3s ease;
+}
+
+.audio-overlay-content {
+  text-align: center;
+  cursor: pointer;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.audio-overlay-content p {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: 2px;
+  font-weight: 500;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 
 /* ══════════════════════════════════════════════════════
    TABLE FELT — Green texture (visible through spotlight)
