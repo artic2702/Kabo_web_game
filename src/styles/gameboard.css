@@ -7,11 +7,7 @@
 .game-board {
   width: 100vw;
   height: 100vh;
-  background: var(--color-bg-primary);
-  background-image:
-    radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 60%);
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,8 +32,8 @@
 
 /* ── Table Container ──────────────────────────────── */
 .table-container {
-  width: min(850px, 90vmin);
-  height: min(850px, 90vmin);
+  width: min(1100px, 95vmin);
+  height: min(1100px, 95vmin);
   background: radial-gradient(circle at 40% 40%, var(--color-table-center) 0%, var(--color-table-edge) 70%, #0a2a10 100%);
   border-radius: 50%;
   position: relative;
@@ -365,6 +361,16 @@
 }
 
 /* ── Responsive Adjustments ───────────────────────── */
+
+/* Laptop / Large Screen */
+@media (min-width: 1024px) {
+  :root {
+    --card-width: 80px;
+    --card-height: 110px;
+    --card-gap: 10px;
+  }
+}
+
 @media (max-width: 768px) {
   :root {
     --card-width: 46px;
@@ -372,17 +378,123 @@
     --card-gap: 4px;
   }
 
+  .game-board {
+    touch-action: manipulation;
+  }
+
   .table-container {
-    width: min(95vw, 95vh);
-    height: min(95vw, 95vh);
+    width: min(92vw, 92vh);
+    height: min(92vw, 92vh);
   }
 
   .table-center {
-    gap: var(--space-6);
+    gap: var(--space-4);
+  }
+
+  .pile-label {
+    font-size: 0.6rem;
   }
 
   .player-name {
-    font-size: var(--text-xs);
-    padding: 2px var(--space-2);
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  .player-score {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  .game-status {
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .game-status .turn-info {
+    font-size: 0.7rem;
+  }
+
+  .game-status .phase-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .kabo-alert {
+    font-size: 0.7rem;
+  }
+
+  .game-message {
+    font-size: 0.75rem;
+    padding: var(--space-2) var(--space-4);
+    max-width: 85vw;
+    text-align: center;
+  }
+
+  .drawn-card-display {
+    bottom: var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .drawn-card-display .label {
+    font-size: 0.65rem;
+  }
+
+  .drawn-card-actions {
+    gap: var(--space-1);
+  }
+
+  .btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.75rem;
+    gap: var(--space-1);
+  }
+
+  .btn-kabo {
+    font-size: 0.85rem;
+    padding: var(--space-2) var(--space-4);
+    letter-spacing: 1px;
+  }
+
+  .action-panel {
+    bottom: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .action-panel .action-hint {
+    font-size: 0.6rem;
+  }
+
+  .deck-count,
+  .discard-count {
+    font-size: 0.6rem;
+  }
+
+  .empty-pile {
+    width: var(--card-width);
+    height: var(--card-height);
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --card-width: 38px;
+    --card-height: 56px;
+    --card-gap: 3px;
+  }
+
+  .table-container {
+    width: min(96vw, 96vh);
+    height: min(96vw, 96vh);
+  }
+
+  .table-center {
+    gap: var(--space-3);
+  }
+
+  .player-name {
+    font-size: 0.58rem;
+    padding: 1px 5px;
   }
 }

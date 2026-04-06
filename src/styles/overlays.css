@@ -496,3 +496,121 @@
   color: var(--color-text-muted);
   font-weight: var(--font-medium);
 }
+
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — Mobile (≤768px)
+   ══════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  .overlay-modal {
+    padding: var(--space-5) var(--space-4);
+    width: 92%;
+    max-width: none;
+  }
+
+  .overlay-title {
+    font-size: var(--text-xl);
+  }
+
+  .overlay-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .overlay-actions {
+    gap: var(--space-2);
+  }
+
+  /* Peek phase */
+  .peek-phase-modal {
+    padding: var(--space-5);
+    width: 92%;
+    max-width: none;
+  }
+
+  .peek-phase-modal h2 {
+    font-size: var(--text-xl);
+  }
+
+  .peek-cards-horizontal {
+    gap: var(--space-2);
+    margin: var(--space-4) 0;
+  }
+
+  .peek-card-btn {
+    padding: var(--space-1);
+  }
+
+  /* Power-up */
+  .power-up-banner {
+    max-width: 90vw;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .power-up-title {
+    font-size: var(--text-lg);
+  }
+
+  .power-up-desc {
+    font-size: 0.8rem;
+  }
+
+  /* Stack phase */
+  .stack-phase-overlay {
+    padding-top: 60px;
+  }
+
+  .stack-phase-banner {
+    padding: var(--space-2) var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .stack-phase-text {
+    font-size: 0.8rem;
+  }
+
+  /* Game end */
+  .game-end-overlay {
+    padding: 12px;
+  }
+
+  .game-end-modal {
+    padding: 20px 16px;
+    max-width: none;
+    width: 96%;
+  }
+
+  .game-end-header {
+    margin-bottom: 16px;
+  }
+
+  .game-end-trophy {
+    font-size: 2.2rem;
+  }
+
+  .game-end-title {
+    font-size: var(--text-2xl);
+  }
+
+  .game-end-winner-name {
+    font-size: var(--text-base);
+  }
+
+  .end-hand {
+    padding: 10px 10px;
+  }
+
+  .end-hand-name {
+    font-size: 0.8rem;
+  }
+
+  .end-hand-score {
+    font-size: 0.85rem;
+  }
+
+  .game-end-btn {
+    padding: 10px 28px;
+    font-size: 0.9rem;
+  }
+}
