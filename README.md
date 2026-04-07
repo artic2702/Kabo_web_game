@@ -23,20 +23,23 @@ Play locally on the same device, or online with friends using room codes!
 Kabo is a memory card game where the goal is to have the **lowest total hand value**.
 
 ### Setup
+
 - Each player gets **4 face-down cards**
 - At the start, you peek at **2 of your 4 cards** — memorize them!
 - The remaining 2 cards are unknown to you
 
 ### Card Values
-| Card | Value |
-|------|-------|
-| King (K) | 0 |
-| Ace (A) | 1 |
-| 2–10 | Face value |
-| Jack (J) | 11 |
-| Queen (Q) | 12 |
+
+| Card      | Value      |
+| --------- | ---------- |
+| King (K)  | 0          |
+| Ace (A)   | 1          |
+| 2–10      | Face value |
+| Jack (J)  | 11         |
+| Queen (Q) | 12         |
 
 ### On Your Turn
+
 1. **Draw** from the deck (face-down) or the discard pile (face-up)
 2. **Decide**: Either swap it with one of your hand cards, or throw it away
    - If you draw from discard, you **must** swap (no throwing back)
@@ -48,6 +51,7 @@ Kabo is a memory card game where the goal is to have the **lowest total hand val
    - Wrong stack → penalty card drawn from the deck
 
 ### Calling KABO
+
 - At the **start of your turn**, you can call "KABO!" if you think you have the lowest hand
 - You still play your turn normally
 - Everyone else gets **one more turn** (final round)
@@ -56,6 +60,7 @@ Kabo is a memory card game where the goal is to have the **lowest total hand val
   - ❌ If someone else tied or beat them → Kabo caller gets **+10 penalty**
 
 ### Winning
+
 The player with the **lowest total hand value** wins!
 
 ---
@@ -63,6 +68,7 @@ The player with the **lowest total hand value** wins!
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - [Node.js](https://nodejs.org/) v18+ installed
 
 ### Install & Run
@@ -93,6 +99,7 @@ Then open **http://localhost:5173** in your browser.
 ### Step-by-Step Guide
 
 #### Player 1 (Host):
+
 1. Run `npm run server` and `npm run dev` on your computer
 2. Open the game in your browser
 3. Click **"Play Online"**
@@ -103,6 +110,7 @@ Then open **http://localhost:5173** in your browser.
 8. Click **"Start Game"** to begin
 
 #### Player 2+ (Friends):
+
 1. Open the game URL in their browser
 2. Click **"Play Online"**
 3. Enter their name and click **"Join Room"**
@@ -111,6 +119,7 @@ Then open **http://localhost:5173** in your browser.
 6. Wait for the host to start the game!
 
 ### Playing on the Same Network (LAN)
+
 If your friends are on the same WiFi network:
 
 1. Find your computer's local IP address:
@@ -123,7 +132,9 @@ If your friends are on the same WiFi network:
 3. Make sure the server is running on your machine (`npm run server`)
 
 ### Playing Over the Internet
+
 To play with friends NOT on your network, you need to either:
+
 - **Deploy** the server to a cloud service (Render, Railway, Heroku)
 - Use a **tunneling tool** like [ngrok](https://ngrok.com/):
   ```bash
@@ -132,129 +143,31 @@ To play with friends NOT on your network, you need to either:
   ```
   Then share the ngrok URL with friends. Update the `VITE_SERVER_URL` env variable to match.
 
----
-
-## 🔌 How WebSockets Work (Explained Simply)
-
-### The Problem with Normal HTTP
-Normally, a web browser talks to a server like this:
-
-```
-Browser: "Hey server, any new data?"     → HTTP Request
-Server:  "Nope."                         ← HTTP Response
-
-(2 seconds later)
-
-Browser: "How about now?"                → HTTP Request
-Server:  "Still no."                     ← HTTP Response
-
-(2 seconds later)
-
-Browser: "Now?"                          → HTTP Request
-Server:  "YES! Player 2 drew a card!"    ← HTTP Response
-```
-
-This is called **polling** — the browser keeps asking over and over. It's slow and wastes bandwidth.
-
-### WebSockets: A Persistent Connection
-WebSockets fix this by creating a **permanent, two-way connection**:
-
-```
-Browser: "Hey, let's upgrade to WebSocket"  → HTTP Upgrade Request
-Server:  "Sure, connection open!"            ← 101 Switching Protocols
-
-  ═══════════ CONNECTION STAYS OPEN ═══════════
-
-Server → Browser: "Player 2 drew a card!"    (instant push)
-Server → Browser: "Player 2 swapped card 3!" (instant push)
-Browser → Server: "I want to draw from deck" (instant send)
-Server → Browser: "Here's your new card!"    (instant push)
-```
-
-The connection stays open like a **phone call** — either side can talk at any time without asking first.
-
-### How Kabo Uses WebSockets (Socket.IO)
-
-We use **Socket.IO**, a library that makes WebSockets easy to use. Here's what happens:
-
-#### 1. Connection
-```
-You open the game → Browser connects to server via WebSocket
-Server assigns you a unique socket ID (like a phone number)
-```
-
-#### 2. Creating a Room
-```
-You click "Create Room"
-  → Browser sends: socket.emit('room:create', { playerName: 'You' })
-  → Server creates room "MWPK", remembers your socket ID
-  ← Server replies: { roomCode: 'MWPK', playerId: 0 }
-```
-
-#### 3. Friend Joins
-```
-Friend enters code "MWPK"
-  → Friend's browser sends: socket.emit('room:join', { roomCode: 'MWPK', playerName: 'Friend' })
-  → Server adds friend to room "MWPK"
-  ← Server tells YOU: socket.emit('room:player-joined', { ... })
-  ← Server tells FRIEND: { success: true, playerId: 1 }
-```
-
-#### 4. During the Game
-```
-It's your turn, you click the deck:
-  → Browser sends: socket.emit('game:action', { type: 'DRAW_FROM_DECK' })
-  → Server validates: "Is it really your turn? Is this action legal?"
-  → Server runs the SAME game logic (gameReducer) that local mode uses
-  → Server filters the state (hides your cards from your friend!)
-  → Server sends EACH player their own filtered view:
-      ← To you:    { state: { ...yourCards visible... } }
-      ← To friend:  { state: { ...yourCards hidden... } }
-```
-
-#### 5. Anti-Cheat
-The server is the **single source of truth**. No one can cheat because:
-- The server validates every action (checks if it's your turn, if the move is legal)
-- The server hides information (you can't see other players' face-down cards)
-- Even if someone hacks their browser, the server rejects invalid moves
-
-### Visual Flow
-
-```
-┌──────────────┐                    ┌──────────────┐
-│   Player 1   │◄══ WebSocket ══►   │              │   ◄══ WebSocket ══►  ┌──────────────┐
-│   Browser    │    (Socket.IO)     │    SERVER    │      (Socket.IO)     │   Player 2   │
-│              │                    │              │                      │   Browser    │
-│  React App   │ ── action ──────►  │  Validates   │  ◄── action ──────  │  React App   │
-│              │ ◄── state ──────── │  Processes   │  ─── state ──────►  │              │
-│              │                    │  Broadcasts  │                      │              │
-└──────────────┘                    └──────────────┘                      └──────────────┘
-
-         Action: "I want to draw a card"
-         State:  "Here's the new board (with your cards visible, theirs hidden)"
-```
-
----
-
 ## 🏗️ Project Architecture
 
 The project is split into **4 clear responsibility areas**:
 
 ### 1. Game Logic (`src/game/`) — The Rules Engine
+
 Pure JavaScript, zero dependencies. Contains all game rules as **pure functions** — given a state and an action, it returns a new state. No React, no DOM, no side effects.
 
 This is the brain of the game. The same code runs on both the client (local mode) and the server (multiplayer mode).
 
 ### 2. UI Components (`src/components/`) — What You See
+
 React components that render the game. They never contain game rules — they just display state and collect user input.
 
 ### 3. Hooks (`src/hooks/`) — The Bridge
+
 React hooks that connect the components to the game logic:
+
 - **Local mode**: `useGameState` runs the game reducer directly in the browser
 - **Online mode**: `useMultiplayerState` sends actions to the server via WebSocket and receives state updates
 
 ### 4. Server (`server/`) — The Multiplayer Brain
+
 Node.js + Express + Socket.IO server that:
+
 - Manages rooms (create/join/leave)
 - Runs the same game reducer for multiplayer games
 - Filters state per player (anti-cheat)
@@ -342,26 +255,26 @@ kabo/
 
 ## 🛠️ Technologies Used
 
-| Technology | Purpose |
-|-----------|---------|
-| **React 19** | Frontend UI framework |
-| **Vite 7** | Fast dev server and bundler |
-| **Node.js** | Backend runtime |
-| **Express** | HTTP server for API + static files |
-| **Socket.IO** | Real-time WebSocket communication |
-| **Tailwind CSS v4** | Utility CSS framework |
-| **Vanilla CSS** | Custom design system (variables.css) |
+| Technology          | Purpose                              |
+| ------------------- | ------------------------------------ |
+| **React 19**        | Frontend UI framework                |
+| **Vite 7**          | Fast dev server and bundler          |
+| **Node.js**         | Backend runtime                      |
+| **Express**         | HTTP server for API + static files   |
+| **Socket.IO**       | Real-time WebSocket communication    |
+| **Tailwind CSS v4** | Utility CSS framework                |
+| **Vanilla CSS**     | Custom design system (variables.css) |
 
 ---
 
 ## 📝 NPM Scripts
 
-| Command | What it does |
-|---------|-------------|
-| `npm run dev` | Start Vite dev server (frontend) |
-| `npm run server` | Start the multiplayer game server |
-| `npm run build` | Build production bundle |
-| `npm run preview` | Preview production build |
+| Command           | What it does                      |
+| ----------------- | --------------------------------- |
+| `npm run dev`     | Start Vite dev server (frontend)  |
+| `npm run server`  | Start the multiplayer game server |
+| `npm run build`   | Build production bundle           |
+| `npm run preview` | Preview production build          |
 
 **To play locally**: Just run `npm run dev`
 **To play online**: Run BOTH `npm run server` AND `npm run dev`
@@ -371,6 +284,7 @@ kabo/
 ## 🤝 Contributing
 
 The codebase is designed for readability:
+
 - **`src/game/`** — Pure logic, no framework dependencies. Great starting point to understand the rules.
 - **`server/`** — Multiplayer backend. Each file has doc comments explaining its role.
 - **`src/components/`** — React components. Each is focused on one piece of the UI.
